@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KrimeKartā - Command Center</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@500&amp;family=Merriweather:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error-container": "#ffdad6",
+                        "surface": "#fcf9f8",
+                        "secondary-fixed": "#ece2cb",
+                        "surface-tint": "#ab342b",
+                        "on-secondary-fixed": "#201b0d",
+                        "on-secondary-fixed-variant": "#4c4636",
+                        "inverse-on-surface": "#f3f0ef",
+                        "tertiary-fixed": "#ffdea4",
+                        "inverse-surface": "#303030",
+                        "secondary-fixed-dim": "#cfc6b0",
+                        "on-primary-fixed": "#410001",
+                        "primary": "#6b0105",
+                        "on-tertiary-fixed-variant": "#5d4200",
+                        "on-tertiary-container": "#e0b14f",
+                        "error": "#ba1a1a",
+                        "surface-container-high": "#eae7e7",
+                        "outline": "#8c716d",
+                        "tertiary-container": "#5f4400",
+                        "tertiary": "#432f00",
+                        "secondary": "#645e4c",
+                        "primary-fixed-dim": "#ffb4aa",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-highest": "#e5e2e1",
+                        "surface-container-low": "#f6f3f2",
+                        "on-primary-container": "#ff9d91",
+                        "tertiary-fixed-dim": "#f0bf5c",
+                        "on-primary-fixed-variant": "#8a1b17",
+                        "on-primary": "#ffffff",
+                        "on-background": "#1b1b1c",
+                        "on-error-container": "#93000a",
+                        "surface-container": "#f0eded",
+                        "outline-variant": "#dfbfbb",
+                        "surface-bright": "#fcf9f8",
+                        "on-surface-variant": "#58413e",
+                        "on-tertiary-fixed": "#261900",
+                        "surface-dim": "#dcd9d9",
+                        "on-secondary-container": "#6b6452",
+                        "primary-fixed": "#ffdad5",
+                        "on-secondary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "inverse-primary": "#ffb4aa",
+                        "surface-variant": "#e5e2e1",
+                        "primary-container": "#8c1d18",
+                        "on-surface": "#1b1b1c",
+                        "secondary-container": "#ece2cb",
+                        "on-tertiary": "#ffffff",
+                        "background": "#fcf9f8"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "xs": "8px",
+                        "container-max": "1440px",
+                        "gutter": "24px",
+                        "base": "4px",
+                        "xl": "48px",
+                        "md": "24px",
+                        "sm": "16px",
+                        "lg": "32px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-lg-mobile": ["Merriweather"],
+                        "data-mono": ["IBM Plex Sans"],
+                        "body-sm": ["Inter"],
+                        "headline-md": ["Merriweather"],
+                        "headline-lg": ["Merriweather"],
+                        "headline-sm": ["Merriweather"],
+                        "display": ["Merriweather"],
+                        "label-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "data-mono": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "700" }],
+                        "display": ["40px", { "lineHeight": "52px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: #fcf9f8; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Low-Contrast Outline Cards */
+        .card-surface-1 {
+            background-color: #ffffff;
+            border: 1px solid #dfbfbb; /* outline-variant */
+            border-radius: 0.25rem; /* lg */
+        }
+        
+        /* Table Header Background */
+        .bg-table-header { background-color: #f6f3f2; /* surface-container-low */ }
+        
+        /* Status Dot Animations */
+        @keyframes pulse-red {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(186, 26, 26, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(186, 26, 26, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(186, 26, 26, 0); }
+        }
+        .status-dot-critical { animation: pulse-red 2s infinite; background-color: #ba1a1a; }
+        .status-dot-active { background-color: #8c1d18; }
+        .status-dot-standby { background-color: #645e4c; }
+    </style>
+</head>
+<body class="font-body-md text-body-md text-on-background flex h-screen overflow-hidden antialiased">
+<!-- SideNavBar -->
+<aside class="hidden md:flex w-[280px] h-screen flex-col sticky top-0 border-r border-outline-variant bg-surface flex-shrink-0 z-40">
+<!-- Header -->
+<div class="p-md border-b border-outline-variant flex items-center gap-3">
+<img alt="Karnataka Police Emblem" class="w-10 h-10 object-contain" data-alt="A highly detailed illustration of an official police crest or emblem suitable for a government intelligence platform. It features intricate line work in dark crimson and gold, displaying authority and precision on a crisp white background. The aesthetic is institutional, formal, and slightly modernized for a digital context." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBf2XFqkr7O9doRlcZJdpz8vrMthYCUb0griI0xRmwU7bCGh7VqGjBaUVK400jMUZD5V6VI_j65AsIK8IFdNL-L05c5-WGNBPmj_kQ59Ffp9y2IXUPB3NdzsuPSnI4M9qB-jdRRnPfWCzHm17UHDDXkUTCLMGq3Z0OHekBFA_hKWeLSebF3vxyDW5eQ12WxW76NbsJ9WdOUMP-XHbaqUidFCvdgHwB-ER4O94LiVc7iUs3qDoOTXm_pV2-adVQo5s114YE3wFgVoeVv"/>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">KrimeKartā</h1>
+<p class="font-label-md text-label-md text-on-surface-variant">Law Enforcement Intel</p>
+</div>
+</div>
+<!-- Navigation Tabs -->
+<nav class="flex flex-col h-full py-md overflow-y-auto scrollbar-hide flex-grow">
+<!-- Active Tab: Dashboard -->
+<a class="flex items-center gap-3 px-4 py-3 bg-primary text-on-primary rounded-lg mx-2 scale-[0.98] transition-transform duration-150 mb-1" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors mx-2 rounded-lg mb-1" href="#">
+<span class="material-symbols-outlined">map</span>
+<span class="font-label-md text-label-md">Crime Map</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors mx-2 rounded-lg mb-1" href="#">
+<span class="material-symbols-outlined">query_stats</span>
+<span class="font-label-md text-label-md">Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors mx-2 rounded-lg mb-1" href="#">
+<span class="material-symbols-outlined">auto_awesome</span>
+<span class="font-label-md text-label-md">AI Patrol</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors mx-2 rounded-lg mb-1" href="#">
+<span class="material-symbols-outlined">hub</span>
+<span class="font-label-md text-label-md">Network Analysis</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors mx-2 rounded-lg mb-1" href="#">
+<span class="material-symbols-outlined">description</span>
+<span class="font-label-md text-label-md">Records</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors mx-2 rounded-lg mb-1" href="#">
+<span class="material-symbols-outlined">summarize</span>
+<span class="font-label-md text-label-md">Reports</span>
+</a>
+<div class="mt-auto pt-4 border-t border-outline-variant mx-4">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors -mx-2 rounded-lg mb-1" href="#">
+<span class="material-symbols-outlined">verified_user</span>
+<span class="font-label-md text-label-md">System Status</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors -mx-2 rounded-lg" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</div>
+</nav>
+<!-- CTA -->
+<div class="p-4 border-t border-outline-variant bg-surface-container-lowest">
+<button class="w-full bg-primary-container text-on-primary py-2 rounded-lg font-label-md text-label-md hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">local_police</span>
+                Emergency Dispatch
+            </button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col h-screen overflow-hidden">
+<!-- TopAppBar (Mobile Only - Simplified for this context, normally would be the full component) -->
+<header class="md:hidden flex justify-between items-center w-full h-16 px-sm border-b border-outline-variant bg-surface sticky top-0 z-50">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">menu</span>
+<span class="font-headline-md text-headline-md font-bold text-primary">KrimeKartā</span>
+</div>
+<div class="flex gap-2">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<img alt="Officer Profile" class="w-8 h-8 rounded-full border border-outline-variant" data-alt="A professional headshot of a police intelligence officer in uniform, looking focused. The lighting is bright and clean, typical of an official ID badge photo. The background is a stark, neutral white to maintain the formal, high-contrast aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDnDwnASUWUdH1X0qiC7Q67NNAGhCYgs5Uitu_0d9zwcFezbkK89rYeXFCMRHcl9LY6d4ddFPSctSmMEGIqqjukvPPBagzbCw7DbPpOdGUI0fr6nfZtGxMRJpqW_wEeNwxggRm8hpm3YPDIUiidmFbp2OmSLrRO61l9syL6YZMsmQ_g7BSkBhnEc4FMG4psRW82rBpBB0WZA1fIzn67UkTIFHhesNgNJJVjWCRD1Kj_jfucQ0rYxHEJbOq69NUGF_F0vcSaoRg29-Kc"/>
+</div>
+</header>
+<!-- Page Header -->
+<div class="px-md py-4 border-b border-outline-variant bg-surface-container-lowest flex flex-col md:flex-row justify-between items-start md:items-center gap-4 flex-shrink-0">
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Command Center</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Live Operational Overview • District 7 • Real-time Monitoring Active</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-2 bg-error-container px-3 py-1.5 rounded text-on-error-container font-label-md text-label-md border border-outline-variant">
+<div class="w-2 h-2 rounded-full status-dot-critical"></div>
+                    DEFCON 3 ACTIVE
+                </div>
+<span class="font-data-mono text-data-mono text-on-surface-variant px-2">14:03:22 IST</span>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="flex-1 overflow-y-auto p-md bg-background">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-gutter max-w-[1440px] mx-auto">
+<!-- Left Column (Live Feed & Alerts) - 4 cols -->
+<div class="md:col-span-4 flex flex-col gap-gutter">
+<!-- Emergency Alerts -->
+<section class="card-surface-1 flex flex-col h-[200px]">
+<div class="px-4 py-2 border-b border-outline-variant bg-table-header flex justify-between items-center">
+<h3 class="font-label-md text-label-md text-on-surface uppercase tracking-wider flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-error">warning</span>
+                                Priority Alerts
+                            </h3>
+<span class="bg-error text-on-error text-[10px] font-bold px-2 py-0.5 rounded-full">2 NEW</span>
+</div>
+<div class="p-0 overflow-y-auto flex-1">
+<div class="p-3 border-b border-outline-variant bg-[#fff5f5] hover:bg-error-container cursor-pointer transition-colors">
+<div class="flex justify-between items-start mb-1">
+<span class="font-label-md text-label-md text-error">CODE RED - ROBBERY</span>
+<span class="font-data-mono text-[10px] text-on-surface-variant">T-02m</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface leading-tight">Armed robbery reported at MG Road Jewelry District. Multiple suspects armed.</p>
+<div class="mt-2 flex gap-2">
+<span class="text-[10px] border border-outline-variant px-1 rounded text-on-surface-variant">Unit 41 Responding</span>
+</div>
+</div>
+<div class="p-3 border-b border-outline-variant hover:bg-surface-container-low cursor-pointer transition-colors">
+<div class="flex justify-between items-start mb-1">
+<span class="font-label-md text-label-md text-on-tertiary-container">AMBER ALERT - SECTOR 4</span>
+<span class="font-data-mono text-[10px] text-on-surface-variant">T-15m</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface leading-tight">Missing child last seen near Central Station. Description broadcasted to all active units.</p>
+</div>
+</div>
+</section>
+<!-- Live Incident Feed -->
+<section class="card-surface-1 flex flex-col flex-1 min-h-[400px]">
+<div class="px-4 py-2 border-b border-outline-variant bg-table-header flex justify-between items-center">
+<h3 class="font-label-md text-label-md text-on-surface uppercase tracking-wider">Live Incident Feed</h3>
+<button class="text-primary hover:underline font-label-md text-label-md">Filter</button>
+</div>
+<div class="p-0 overflow-y-auto flex-1">
+<!-- Feed Item -->
+<div class="p-3 border-b border-outline-variant hover:bg-surface-container-low flex gap-3">
+<div class="flex flex-col items-center mt-1">
+<span class="material-symbols-outlined text-[16px] text-primary">gavel</span>
+<div class="w-px h-full bg-outline-variant mt-1"></div>
+</div>
+<div class="flex-1 pb-2">
+<div class="flex justify-between items-baseline mb-0.5">
+<span class="font-label-md text-label-md text-on-surface">Assault - Grade 2</span>
+<span class="font-data-mono text-[10px] text-on-surface-variant">13:45</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-1">Altercation reported outside pub in Indiranagar. Patrol en route.</p>
+<span class="inline-block bg-surface-container px-1.5 py-0.5 rounded font-data-mono text-[10px] text-secondary">INC-8894</span>
+</div>
+</div>
+<!-- Feed Item -->
+<div class="p-3 border-b border-outline-variant hover:bg-surface-container-low flex gap-3">
+<div class="flex flex-col items-center mt-1">
+<span class="material-symbols-outlined text-[16px] text-secondary">directions_car</span>
+<div class="w-px h-full bg-outline-variant mt-1"></div>
+</div>
+<div class="flex-1 pb-2">
+<div class="flex justify-between items-baseline mb-0.5">
+<span class="font-label-md text-label-md text-on-surface">Traffic Collision - Major</span>
+<span class="font-data-mono text-[10px] text-on-surface-variant">13:12</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-1">Multi-vehicle collision on Ring Road. Ambulance dispatched.</p>
+<span class="inline-block bg-surface-container px-1.5 py-0.5 rounded font-data-mono text-[10px] text-secondary">INC-8893</span>
+</div>
+</div>
+<!-- Feed Item -->
+<div class="p-3 border-b border-outline-variant hover:bg-surface-container-low flex gap-3">
+<div class="flex flex-col items-center mt-1">
+<span class="material-symbols-outlined text-[16px] text-secondary">storefront</span>
+<div class="w-px h-full bg-outline-variant mt-1"></div>
+</div>
+<div class="flex-1 pb-2">
+<div class="flex justify-between items-baseline mb-0.5">
+<span class="font-label-md text-label-md text-on-surface">Suspicious Activity</span>
+<span class="font-data-mono text-[10px] text-on-surface-variant">12:30</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-1">Unattended bag reported near market square. Bomb squad notified.</p>
+<span class="inline-block bg-surface-container px-1.5 py-0.5 rounded font-data-mono text-[10px] text-secondary">INC-8892</span>
+</div>
+</div>
+<!-- Feed Item -->
+<div class="p-3 hover:bg-surface-container-low flex gap-3 opacity-70">
+<div class="flex flex-col items-center mt-1">
+<span class="material-symbols-outlined text-[16px] text-secondary">campaign</span>
+</div>
+<div class="flex-1 pb-2">
+<div class="flex justify-between items-baseline mb-0.5">
+<span class="font-label-md text-label-md text-on-surface">Noise Complaint</span>
+<span class="font-data-mono text-[10px] text-on-surface-variant">11:15</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-1">Resolved: Warning issued to residents.</p>
+<span class="inline-block bg-surface-container px-1.5 py-0.5 rounded font-data-mono text-[10px] text-secondary">INC-8891 (CLOSED)</span>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Center Column (GIS Map & KPIs) - 5 cols -->
+<div class="md:col-span-5 flex flex-col gap-gutter">
+<!-- GIS Heatmap -->
+<section class="card-surface-1 flex flex-col h-[400px] relative overflow-hidden">
+<div class="absolute inset-0 bg-surface-variant flex items-center justify-center">
+<!-- Placeholder for map visualization -->
+<img alt="City Heatmap" class="w-full h-full object-cover opacity-90" data-alt="A top-down digital map view of an urban city grid (Bangalore style), styled like a high-tech government intelligence heatmap. The map is rendered in high-contrast light mode: clean white roads against faint beige terrain. There are glowing red and amber 'hotspots' or clusters indicating crime density, with a few sharp geometric UI overlays like targeting reticles or data nodes. The aesthetic is clean, professional, and slightly futuristic but grounded in reality." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBosec8AMe_2USgJI93QVXx0C1xd0ohIfTdm0gNVtAeNWjyD6ObiL3n55TwGO01j-nTVRvd6mlwHv1X-hhkNc0CI4MmTetmt6jzxliTH6M_FX85c9m9-fsDfWq091IMaQ3z80fiGjWx8ohN-9CF0frJ2UIBnOnV_15sO0ey3nNFiGwk6x3Rdc83O24yeoVI24ArN65dM87kT2gD6_CXfv58v1DdEg4hYS7JJuWhHxng7lzwKzLfWXiKmKQ6hM5ryp3RYsk-Q_4uO_NZ"/>
+<!-- Overlay UI elements on map -->
+<div class="absolute top-4 left-4 bg-surface/90 backdrop-blur-sm border border-outline-variant p-2 rounded shadow-sm">
+<span class="font-label-md text-[10px] uppercase text-on-surface block mb-1">Density Filter</span>
+<div class="flex gap-1">
+<div class="w-3 h-3 bg-error rounded-sm"></div>
+<div class="w-3 h-3 bg-tertiary-container rounded-sm"></div>
+<div class="w-3 h-3 bg-secondary-container rounded-sm"></div>
+</div>
+</div>
+<div class="absolute bottom-4 right-4 bg-surface/90 backdrop-blur-sm border border-outline-variant p-2 rounded shadow-sm flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<span class="font-data-mono text-[10px] text-on-surface">LIVE SAT LINK</span>
+</div>
+</div>
+</section>
+<!-- District Health KPIs -->
+<section class="grid grid-cols-2 gap-4">
+<div class="card-surface-1 p-4 flex flex-col justify-between">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wide">Patrol Coverage</span>
+<div class="mt-2 flex items-baseline gap-2">
+<span class="font-headline-lg text-headline-lg text-on-surface">84%</span>
+<span class="text-primary text-body-sm font-semibold flex items-center"><span class="material-symbols-outlined text-[14px]">arrow_downward</span> 2%</span>
+</div>
+<div class="w-full bg-surface-container mt-3 h-1.5 rounded-full overflow-hidden">
+<div class="bg-secondary h-full w-[84%]"></div>
+</div>
+</div>
+<div class="card-surface-1 p-4 flex flex-col justify-between">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wide">Avg Response Time</span>
+<div class="mt-2 flex items-baseline gap-2">
+<span class="font-data-mono text-headline-lg text-on-surface">04:12</span>
+<span class="text-secondary text-body-sm font-semibold">min</span>
+</div>
+<p class="font-body-sm text-[10px] text-on-surface-variant mt-2 border-t border-outline-variant pt-1">Target: &lt; 05:00 min</p>
+</div>
+<div class="card-surface-1 p-4 col-span-2">
+<div class="flex justify-between items-center mb-3">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wide">Arrest vs Incident Ratio (24H)</span>
+<span class="font-data-mono text-body-sm text-on-surface">68 / 112</span>
+</div>
+<!-- Simple Bar Chart Placeholder -->
+<div class="flex items-end gap-1 h-16 w-full px-2 border-b border-outline-variant border-l">
+<div class="w-1/6 bg-secondary-container h-[40%] hover:bg-secondary transition-colors cursor-crosshair relative group">
+<div class="absolute -top-6 left-1/2 -translate-x-1/2 bg-inverse-surface text-inverse-on-surface text-[10px] px-1 py-0.5 rounded hidden group-hover:block">12</div>
+</div>
+<div class="w-1/6 bg-secondary-container h-[60%] hover:bg-secondary transition-colors cursor-crosshair"></div>
+<div class="w-1/6 bg-secondary-container h-[30%] hover:bg-secondary transition-colors cursor-crosshair"></div>
+<div class="w-1/6 bg-primary-container h-[90%] hover:bg-primary transition-colors cursor-crosshair"></div>
+<div class="w-1/6 bg-secondary-container h-[50%] hover:bg-secondary transition-colors cursor-crosshair"></div>
+<div class="w-1/6 bg-secondary-container h-[70%] hover:bg-secondary transition-colors cursor-crosshair"></div>
+</div>
+<div class="flex justify-between text-[8px] font-data-mono text-on-surface-variant mt-1 px-2">
+<span>00:00</span>
+<span>04:00</span>
+<span>08:00</span>
+<span>12:00</span>
+<span>16:00</span>
+<span>20:00</span>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Column (Active Units) - 3 cols -->
+<div class="md:col-span-3 flex flex-col gap-gutter">
+<section class="card-surface-1 flex flex-col h-full">
+<div class="px-4 py-3 border-b border-outline-variant bg-table-header flex justify-between items-center">
+<h3 class="font-label-md text-label-md text-on-surface uppercase tracking-wider">Unit Status</h3>
+<span class="font-data-mono text-[10px] bg-surface-container px-1.5 py-0.5 border border-outline-variant rounded">12 ACTIVE</span>
+</div>
+<div class="p-3 bg-surface border-b border-outline-variant">
+<input class="w-full h-8 text-body-sm px-2 border border-outline-variant rounded bg-surface-container-lowest focus:ring-2 focus:ring-tertiary-container focus:border-tertiary-container transition-all" placeholder="Search Callsign..." type="text"/>
+</div>
+<div class="p-0 overflow-y-auto flex-1 bg-surface-bright">
+<!-- Unit Category: Responding -->
+<div class="px-3 py-1 bg-surface-container-highest border-b border-outline-variant font-label-md text-[10px] text-on-surface-variant uppercase">Responding (3)</div>
+<div class="p-3 border-b border-outline-variant flex items-center justify-between hover:bg-surface-container-low cursor-pointer">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full status-dot-critical"></div>
+<span class="font-data-mono text-body-sm font-bold text-on-surface">U-41</span>
+</div>
+<span class="font-body-sm text-[10px] text-error border border-error px-1 rounded">Code Red</span>
+</div>
+<div class="p-3 border-b border-outline-variant flex items-center justify-between hover:bg-surface-container-low cursor-pointer">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full status-dot-active"></div>
+<span class="font-data-mono text-body-sm font-bold text-on-surface">U-22</span>
+</div>
+<span class="font-body-sm text-[10px] text-primary border border-outline-variant px-1 rounded">En Route</span>
+</div>
+<div class="p-3 border-b border-outline-variant flex items-center justify-between hover:bg-surface-container-low cursor-pointer">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full status-dot-active"></div>
+<span class="font-data-mono text-body-sm font-bold text-on-surface">K9-01</span>
+</div>
+<span class="font-body-sm text-[10px] text-primary border border-outline-variant px-1 rounded">En Route</span>
+</div>
+<!-- Unit Category: Patrol -->
+<div class="px-3 py-1 bg-surface-container-highest border-b border-outline-variant font-label-md text-[10px] text-on-surface-variant uppercase mt-2">Active Patrol (7)</div>
+<div class="p-3 border-b border-outline-variant flex items-center justify-between hover:bg-surface-container-low cursor-pointer">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full status-dot-standby"></div>
+<span class="font-data-mono text-body-sm font-bold text-on-surface">U-15</span>
+</div>
+<span class="font-body-sm text-[10px] text-on-surface-variant">Sector 3</span>
+</div>
+<div class="p-3 border-b border-outline-variant flex items-center justify-between hover:bg-surface-container-low cursor-pointer">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full status-dot-standby"></div>
+<span class="font-data-mono text-body-sm font-bold text-on-surface">U-18</span>
+</div>
+<span class="font-body-sm text-[10px] text-on-surface-variant">Sector 4</span>
+</div>
+<div class="p-3 border-b border-outline-variant flex items-center justify-between hover:bg-surface-container-low cursor-pointer opacity-50">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 border border-outline-variant rounded-full"></div>
+<span class="font-data-mono text-body-sm font-bold text-on-surface">U-09</span>
+</div>
+<span class="font-body-sm text-[10px] text-on-surface-variant">Offline</span>
+</div>
+</div>
+</section>
+</div>
+</div>
+</div>
+</main>
+</body></html>

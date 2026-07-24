@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KrimeKartā - Secure Officer Authentication</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Merriweather:wght@400;700&amp;family=IBM+Plex+Sans:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline-variant": "#dfbfbb",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-highest": "#e5e2e1",
+                        "on-secondary-fixed": "#201b0d",
+                        "on-primary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "secondary": "#645e4c",
+                        "error": "#ba1a1a",
+                        "on-primary-container": "#ff9d91",
+                        "inverse-on-surface": "#f3f0ef",
+                        "on-tertiary-fixed": "#261900",
+                        "tertiary": "#432f00",
+                        "on-primary-fixed": "#410001",
+                        "tertiary-fixed-dim": "#f0bf5c",
+                        "primary": "#6b0105",
+                        "on-secondary": "#ffffff",
+                        "surface-tint": "#ab342b",
+                        "inverse-primary": "#ffb4aa",
+                        "surface-dim": "#dcd9d9",
+                        "secondary-container": "#ece2cb",
+                        "secondary-fixed": "#ece2cb",
+                        "primary-container": "#8c1d18",
+                        "tertiary-fixed": "#ffdea4",
+                        "on-surface-variant": "#58413e",
+                        "on-surface": "#1b1b1c",
+                        "inverse-surface": "#303030",
+                        "tertiary-container": "#5f4400",
+                        "on-tertiary-fixed-variant": "#5d4200",
+                        "error-container": "#ffdad6",
+                        "surface-container-high": "#eae7e7",
+                        "primary-fixed": "#ffdad5",
+                        "on-primary-fixed-variant": "#8a1b17",
+                        "on-error": "#ffffff",
+                        "surface-bright": "#fcf9f8",
+                        "surface-container": "#f0eded",
+                        "on-tertiary-container": "#e0b14f",
+                        "surface": "#fcf9f8",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-container": "#6b6452",
+                        "surface-container-low": "#f6f3f2",
+                        "background": "#fcf9f8",
+                        "secondary-fixed-dim": "#cfc6b0",
+                        "primary-fixed-dim": "#ffb4aa",
+                        "outline": "#8c716d",
+                        "on-secondary-fixed-variant": "#4c4636",
+                        "on-background": "#1b1b1c",
+                        "surface-variant": "#e5e2e1"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "base": "4px",
+                        "lg": "32px",
+                        "container-max": "1440px",
+                        "xl": "48px",
+                        "md": "24px",
+                        "sm": "16px",
+                        "gutter": "24px",
+                        "xs": "8px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "headline-lg-mobile": ["Merriweather"],
+                        "data-mono": ["IBM Plex Sans"],
+                        "headline-lg": ["Merriweather"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Merriweather"],
+                        "display": ["Merriweather"],
+                        "body-sm": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-sm": ["Merriweather"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "data-mono": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "display": ["40px", { "lineHeight": "52px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="font-body-md text-body-md text-on-surface bg-background antialiased relative min-h-screen flex items-center justify-center p-sm md:p-md">
+<div class="absolute inset-0 z-0 bg-black">
+<img alt="Karnataka State Emblem overlay background for secure login screen" class="w-full h-full object-cover opacity-40" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGDdARmfzifOMi1W0lLAIwK7nVtsaBJmxCksI3HwNNftvLHa3BQe5f80N8rrYAgMKUp6tdyE3p_mOElMIrdge616jB4DVmT3xrGf6_8pxniisawRWeh5LYV6kEYaH1NJ-rWOcQmcN4w2Ha_g6_dtOF6UUWBVfmVLGI5UyKx47vVuJFNJgvMD_AtXJh7QBSotmWg38EyBUId4NKZmfEYT9PBwmP2_rU6rac4rIhnVodOedVFYtpMlcrznWvCYlj84gvwor83mMgAkYe"/>
+</div>
+<div class="relative z-10 w-full max-w-md bg-[#FAF8F2] border border-[#D8D2C4] rounded shadow-[0_4px_16px_rgba(0,0,0,0.1)] flex flex-col overflow-hidden">
+<div class="p-lg border-b border-[#D8D2C4] bg-surface flex flex-col items-center text-center">
+<div class="flex items-center justify-center gap-md mb-md">
+<img class="w-16 h-auto object-contain" data-alt="Karnataka State Government Emblem in dark metallic tones on a light background, symbolizing authority. Ensure the aesthetic matches a high-contrast, official government report style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAq6ExwzW1j_2A5_G72lCBhaZCS6nh-vVEZCKXmBpw6sjc0Kp8pxzaj5fNk4JaSyyhWFSuAuEJKdOo-qtVnLeCC81Gh9JvaYnHGUJiUJGa8rFT3mxkSRnI_85izQ1qB1YmhUNCvnbzELBbdB-4G2_yKKgk7npvm7OUi6rQk6a424zIUJ3ZxaUjNf2J6oweV3q1XkD_WVHC7g-KtVJVYPuwyKof1DZDZatHthjyblIAHYOJoHKokYg8-DdJDADpUEE-rTEoJZmFZtY7J"/>
+<img class="w-16 h-auto object-contain" data-alt="Karnataka State Police Emblem, shield shape, high-contrast, official government aesthetic on light background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDAmx72ojC-_uCEAyb2AwlFLA10ZcIazajTWK__3bfzpuQvSyb7j1bO16Q60EQgDNT6Gv9bc_rP7hcA6xHUflb_wmIZb1gLYUGy-Ze2vjNZY6qEkbZXMoCPAcpnN38wZrX7veD-tAPb2nAw1z_Up82AHCEvd6I8jxkr_KX0pus2GSQ0AmWuOkjW1RuFi5s5OjegvxFCAAMen_swDXmlNGImk8dko2DfLVjr6CVHU14o44twkaYAXZ4yNJ9xXQV2UqNKihFrLEXhjX_i"/>
+</div>
+<h1 class="font-headline-md text-headline-md text-primary tracking-tight mb-xs">KrimeKartā</h1>
+<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Official Internal Crime Intelligence Platform</p>
+</div>
+<div class="p-lg bg-surface">
+<h2 class="font-headline-sm text-headline-sm text-on-surface mb-sm">Secure Officer Authentication</h2>
+<form action="#" class="flex flex-col gap-md" method="POST">
+<div class="flex flex-col gap-xs">
+<label class="font-label-md text-label-md text-on-surface" for="service-id">Service ID</label>
+<input class="font-body-md text-body-md bg-white border border-[#D8D2C4] rounded px-sm py-xs text-on-surface focus:outline-none focus:ring-2 focus:ring-[#C89B3C] focus:border-transparent transition-shadow" id="service-id" name="service-id" required="" type="text"/>
+</div>
+<div class="flex flex-col gap-xs">
+<label class="font-label-md text-label-md text-on-surface" for="password">Password</label>
+<input class="font-body-md text-body-md bg-white border border-[#D8D2C4] rounded px-sm py-xs text-on-surface focus:outline-none focus:ring-2 focus:ring-[#C89B3C] focus:border-transparent transition-shadow" id="password" name="password" required="" type="password"/>
+</div>
+<div class="flex items-center justify-between mt-xs">
+<label class="flex items-center gap-xs cursor-pointer group">
+<input class="w-4 h-4 rounded-sm border-[#D8D2C4] text-primary-container focus:ring-[#C89B3C] bg-white cursor-pointer" type="checkbox"/>
+<span class="font-body-sm text-body-sm text-on-surface-variant group-hover:text-on-surface transition-colors">Remember this device</span>
+</label>
+<a class="font-body-sm text-body-sm text-primary hover:underline font-medium" href="#">Forgot Password?</a>
+</div>
+<button class="mt-xs w-full bg-[#8C1D18] hover:bg-[#6b0105] text-white font-label-md text-label-md py-sm px-md rounded transition-colors flex items-center justify-center gap-xs shadow-sm" type="submit">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1; font-size: 18px;">lock</span>
+                    SECURE LOGIN
+                </button>
+</form>
+</div>
+<div class="bg-surface-container-low p-md border-t border-[#D8D2C4] flex flex-col items-center text-center gap-xs">
+<p class="font-body-sm text-body-sm text-on-surface-variant">Government of Karnataka | Karnataka Police Headquarters</p>
+<div class="flex items-center gap-xs text-error mt-xs">
+<span class="material-symbols-outlined" style="font-size: 16px;">warning</span>
+<p class="font-label-md text-label-md">Official Internal System. Unauthorized access is prohibited.</p>
+</div>
+</div>
+</div>
+</body></html>

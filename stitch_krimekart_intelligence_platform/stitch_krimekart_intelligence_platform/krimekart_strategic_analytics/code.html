@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KrimeKartā - Crime Analytics</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&amp;family=Inter:wght@400;500;600&amp;family=Merriweather:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Chart.js for visualizations -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary": "#432f00",
+                    "tertiary-fixed-dim": "#f0bf5c",
+                    "error-container": "#ffdad6",
+                    "on-error-container": "#93000a",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-highest": "#e5e2e1",
+                    "surface": "#fcf9f8",
+                    "surface-dim": "#dcd9d9",
+                    "outline-variant": "#dfbfbb",
+                    "primary-fixed-dim": "#ffb4aa",
+                    "surface-container-high": "#eae7e7",
+                    "primary-fixed": "#ffdad5",
+                    "error": "#ba1a1a",
+                    "surface-variant": "#e5e2e1",
+                    "tertiary-container": "#5f4400",
+                    "on-surface-variant": "#58413e",
+                    "on-error": "#ffffff",
+                    "secondary-container": "#ece2cb",
+                    "on-secondary-fixed": "#201b0d",
+                    "on-tertiary-fixed": "#261900",
+                    "on-primary-container": "#ff9d91",
+                    "inverse-surface": "#303030",
+                    "primary-container": "#8c1d18",
+                    "secondary-fixed": "#ece2cb",
+                    "background": "#fcf9f8",
+                    "outline": "#8c716d",
+                    "inverse-on-surface": "#f3f0ef",
+                    "surface-bright": "#fcf9f8",
+                    "on-tertiary-container": "#e0b14f",
+                    "on-tertiary-fixed-variant": "#5d4200",
+                    "on-secondary-container": "#6b6452",
+                    "on-surface": "#1b1b1c",
+                    "on-tertiary": "#ffffff",
+                    "surface-container-low": "#f6f3f2",
+                    "on-background": "#1b1b1c",
+                    "on-secondary": "#ffffff",
+                    "on-secondary-fixed-variant": "#4c4636",
+                    "tertiary-fixed": "#ffdea4",
+                    "on-primary-fixed-variant": "#8a1b17",
+                    "secondary-fixed-dim": "#cfc6b0",
+                    "primary": "#6b0105",
+                    "secondary": "#645e4c",
+                    "on-primary": "#ffffff",
+                    "surface-tint": "#ab342b",
+                    "on-primary-fixed": "#410001",
+                    "inverse-primary": "#ffb4aa",
+                    "surface-container": "#f0eded"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "container-max": "1440px",
+                    "gutter": "24px",
+                    "base": "4px",
+                    "md": "24px",
+                    "xs": "8px",
+                    "lg": "32px",
+                    "sm": "16px",
+                    "xl": "48px"
+            },
+            "fontFamily": {
+                    "headline-sm": ["Merriweather"],
+                    "body-md": ["Inter"],
+                    "headline-md": ["Merriweather"],
+                    "body-lg": ["Inter"],
+                    "data-mono": ["IBM Plex Sans"],
+                    "headline-lg-mobile": ["Merriweather"],
+                    "display": ["Merriweather"],
+                    "body-sm": ["Inter"],
+                    "label-md": ["Inter"],
+                    "headline-lg": ["Merriweather"]
+            },
+            "fontSize": {
+                    "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "700" }],
+                    "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                    "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                    "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                    "data-mono": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+                    "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                    "display": ["40px", { "lineHeight": "52px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                    "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                    "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+                    "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+          font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill-icon {
+          font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        /* Custom Scrollbar for sidebars */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: theme('colors.surface-dim');
+            border-radius: theme('borderRadius.full');
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: theme('colors.outline-variant');
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md h-screen overflow-hidden flex selection:bg-primary selection:text-on-primary">
+<!-- JSON: SideNavBar -->
+<aside class="w-[280px] h-screen flex flex-col sticky top-0 border-r border-outline-variant dark:border-outline bg-surface dark:bg-surface-dim z-40 flex-shrink-0 hidden md:flex">
+<div class="flex items-center gap-sm px-md py-lg border-b border-outline-variant dark:border-outline">
+<div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center shrink-0">
+<img class="w-8 h-8 object-contain rounded-full" data-alt="A highly detailed, professional crest or emblem serving as a police department logo, styled with traditional gold and dark red hues, clean vector-like design suitable for a modern enterprise interface. Soft, even lighting highlights the metallic sheen of the emblem against a neutral background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBRPegHjijY-CsNE9oH5CqMZ0XwdhbjEVVECNMbiD9P990KuYFR0Rdu57zjzJZ9V6c5pRpsNPQ_Y1Z79oDU2KRTi4aJk5N_dssYd8OCMLkSPYm7SZKKXMBxm-S30pJ0suHxYOB21dnzPsU6L34XgH2tBGeq8QCfoSRdg8_rAycNxVoHTtHJ5y35dkN0ehVY7u-1Or88M7gBbUPiIATEh9j-VH9RqhxChLv3N3oYbpqTv_jtfXKwIttVDw"/>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed truncate">KrimeKartā</span>
+<span class="font-label-md text-label-md text-on-surface-variant truncate">Law Enforcement Intel</span>
+</div>
+</div>
+<nav class="flex-1 overflow-y-auto py-md flex flex-col gap-xs">
+<!-- Active: Analytics -->
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-on-surface hover:bg-surface-container-high transition-colors mx-2 rounded-lg" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-on-surface hover:bg-surface-container-high transition-colors mx-2 rounded-lg" href="#">
+<span class="material-symbols-outlined">map</span>
+<span class="font-label-md text-label-md">Crime Map</span>
+</a>
+<!-- ACTIVE TAB -->
+<a class="flex items-center gap-3 px-4 py-3 bg-primary text-on-primary rounded-lg mx-2 scale-[0.98] transition-transform duration-150" href="#">
+<span class="material-symbols-outlined fill-icon">query_stats</span>
+<span class="font-label-md text-label-md">Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-on-surface hover:bg-surface-container-high transition-colors mx-2 rounded-lg" href="#">
+<span class="material-symbols-outlined">auto_awesome</span>
+<span class="font-label-md text-label-md">AI Patrol</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-on-surface hover:bg-surface-container-high transition-colors mx-2 rounded-lg" href="#">
+<span class="material-symbols-outlined">hub</span>
+<span class="font-label-md text-label-md">Network Analysis</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-on-surface hover:bg-surface-container-high transition-colors mx-2 rounded-lg" href="#">
+<span class="material-symbols-outlined">description</span>
+<span class="font-label-md text-label-md">Records</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-on-surface hover:bg-surface-container-high transition-colors mx-2 rounded-lg" href="#">
+<span class="material-symbols-outlined">summarize</span>
+<span class="font-label-md text-label-md">Reports</span>
+</a>
+</nav>
+<div class="p-md mt-auto border-t border-outline-variant dark:border-outline flex flex-col gap-sm">
+<button class="w-full py-2 px-4 bg-primary text-on-primary font-label-md text-label-md rounded hover:bg-primary-fixed-variant transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">emergency</span>
+                Emergency Dispatch
+            </button>
+<div class="flex flex-col gap-xs mt-sm">
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-surface-container-high transition-colors mx-2 rounded-lg" href="#">
+<span class="material-symbols-outlined text-[18px]">verified_user</span>
+<span class="font-label-md text-label-md">System Status</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-surface-container-high transition-colors mx-2 rounded-lg" href="#">
+<span class="material-symbols-outlined text-[18px]">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<div class="flex-1 flex flex-col h-full overflow-hidden bg-background">
+<!-- JSON: TopAppBar (Mobile Only - Desktop nav is side) -->
+<header class="flex md:hidden justify-between items-center w-full h-16 px-md sticky top-0 z-50 bg-surface dark:bg-surface-dim border-b border-outline-variant dark:border-outline">
+<div class="flex items-center gap-sm">
+<button class="text-on-surface hover:bg-surface-container-low p-2 rounded-full">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<span class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">KrimeKartā</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="text-on-surface-variant p-2 hover:bg-surface-container-low rounded-full">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-on-surface-variant p-2 hover:bg-surface-container-low rounded-full">
+<img class="w-8 h-8 rounded-full object-cover" data-alt="A small, professional circular avatar portrait of a law enforcement officer in a clean, high-key lighting setup. The background is a crisp, modern off-white, conveying an enterprise software aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBtqhSDfm7d4Wr1T9diJ8AcM3psj3K-RIZYvcUb3FOpPjYsMXkAsDaIqsd7rt_VAyF93VL1_tgqWYyotqJtw3ucBO_lHd9kp0N2wot5FQlrM1HPx1GGyKH9z-gIQ-oP_Y42LT1pm0AVfcFbXHagmZlkfpiLaXPHE0EaCUEmqWh6-UsQwC95Kc0J8bV199j_Bs9R6OlVg1jALKtFJaJ6sgu_p6RcMIcXFuMEWIMyFvBRkyBZe4VCOWQ0Uw"/>
+</button>
+</div>
+</header>
+<!-- TopAppBar Actions (Desktop specific header area for main content) -->
+<header class="hidden md:flex justify-between items-center w-full h-16 px-xl sticky top-0 z-30 bg-surface/90 backdrop-blur-sm border-b border-outline-variant">
+<h1 class="font-headline-sm text-headline-sm text-on-surface">Crime Analytics</h1>
+<div class="flex items-center gap-4">
+<!-- Search -->
+<div class="relative hidden lg:flex items-center w-64">
+<span class="material-symbols-outlined absolute left-3 text-on-surface-variant text-[18px]">search</span>
+<input class="w-full h-9 pl-10 pr-3 bg-surface-container-lowest border border-outline-variant rounded font-body-sm text-body-sm focus:ring-2 focus:ring-tertiary-fixed-dim focus:border-transparent outline-none transition-all placeholder:text-on-surface-variant/50" placeholder="Search analytics..." type="text"/>
+</div>
+<button class="text-on-surface-variant hover:bg-surface-container-high p-2 rounded-full transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="flex items-center gap-2 hover:bg-surface-container-high p-1 pr-3 rounded-full transition-colors border border-outline-variant bg-surface-container-lowest">
+<img class="w-7 h-7 rounded-full object-cover" data-alt="A small, professional circular avatar portrait of a law enforcement officer in a clean, high-key lighting setup. The background is a crisp, modern off-white, conveying an enterprise software aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBfNbN65yDAlh3g-4bTkw8I-g7UR6qDkwlpWrCiw5-uzu-xQafgnicXQfB1Uqp0cApcoTrOed6497xJy1XPAfaYJz17YVctVm6fv15S9I9impgPqBGNTg24SKvHwH7NU8b_mpSQRryjDD83zlIBDh15cDQbk13Ms2wFH9DlWxKEZd4ZH6vqMf3JApiG9SFNWWUagfK3zuB4k-v32EBv0jPke2pA2UdL6eQgcMu2GROeCD9r9Za09VXamQ"/>
+<span class="font-label-md text-label-md text-on-surface">ID: 49201</span>
+</button>
+</div>
+</header>
+<!-- Scrollable Content -->
+<main class="flex-1 overflow-y-auto p-4 md:p-xl flex flex-col gap-lg">
+<!-- Filters & Header Section -->
+<section class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-surface-container-lowest p-md border border-outline-variant rounded-lg">
+<div>
+<h2 class="font-headline-md text-headline-lg-mobile md:text-headline-md text-on-background">Statistical Overview</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Detailed breakdown of incident reports and patterns across jurisdictions.</p>
+</div>
+<div class="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+<!-- Date Picker Mock -->
+<div class="flex items-center gap-2 bg-surface p-2 border border-outline-variant rounded flex-1 lg:flex-none min-w-[200px]">
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">calendar_today</span>
+<select class="bg-transparent font-data-mono text-data-mono text-on-surface w-full outline-none appearance-none cursor-pointer border-none p-0 focus:ring-0">
+<option>Q3 2023 (Jul - Sep)</option>
+<option>Q2 2023 (Apr - Jun)</option>
+<option>YTD 2023</option>
+</select>
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">arrow_drop_down</span>
+</div>
+<!-- District Dropdown -->
+<div class="flex items-center gap-2 bg-surface p-2 border border-outline-variant rounded flex-1 lg:flex-none min-w-[160px]">
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">location_on</span>
+<select class="bg-transparent font-data-mono text-data-mono text-on-surface w-full outline-none appearance-none cursor-pointer border-none p-0 focus:ring-0">
+<option>All Districts</option>
+<option>Bengaluru Urban</option>
+<option>Mysuru</option>
+<option>Hubballi-Dharwad</option>
+</select>
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">arrow_drop_down</span>
+</div>
+<button class="bg-secondary text-on-secondary p-2 rounded hover:bg-secondary/90 transition-colors flex items-center justify-center h-full">
+<span class="material-symbols-outlined">download</span>
+</button>
+</div>
+</section>
+<!-- Grid Layout for Charts & Insights -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-lg">
+<!-- Main Charts Area (Left/Center 8 cols) -->
+<div class="lg:col-span-8 flex flex-col gap-lg">
+<!-- Trend Analysis (Area Chart) -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-md flex flex-col">
+<div class="flex justify-between items-center mb-md border-b border-outline-variant pb-2">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Incident Trend Analysis</h3>
+<span class="font-label-md text-label-md bg-surface-container p-1 px-2 rounded text-on-surface-variant">Weekly Aggregation</span>
+</div>
+<div class="w-full h-[300px] relative">
+<canvas id="trendChart"></canvas>
+</div>
+</div>
+<!-- Lower Grid: District Comparison & Category Treemap -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-lg">
+<!-- District Comparison (Bar Chart) -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-md flex flex-col">
+<div class="mb-md border-b border-outline-variant pb-2">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">District Comparison</h3>
+</div>
+<div class="w-full h-[250px] relative">
+<canvas id="districtChart"></canvas>
+</div>
+</div>
+<!-- Category Breakdown (Treemap mock using divs for strict UI control) -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-md flex flex-col">
+<div class="mb-md border-b border-outline-variant pb-2">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Category Breakdown</h3>
+</div>
+<div class="w-full h-[250px] flex flex-col gap-1">
+<div class="flex gap-1 h-3/5">
+<div class="bg-secondary-container text-on-secondary-container w-2/3 p-2 rounded-sm flex flex-col justify-between border border-outline-variant/30 hover:opacity-90 cursor-default">
+<span class="font-label-md text-label-md">Property Crime</span>
+<span class="font-data-mono text-data-mono font-bold text-lg">42%</span>
+</div>
+<div class="bg-surface-variant text-on-surface-variant w-1/3 p-2 rounded-sm flex flex-col justify-between border border-outline-variant/30 hover:opacity-90 cursor-default">
+<span class="font-label-md text-label-md">Cyber</span>
+<span class="font-data-mono text-data-mono font-bold text-lg">21%</span>
+</div>
+</div>
+<div class="flex gap-1 h-2/5">
+<div class="bg-tertiary-container text-on-tertiary-container w-1/2 p-2 rounded-sm flex flex-col justify-between border border-outline-variant/30 hover:opacity-90 cursor-default">
+<span class="font-label-md text-label-md">Violent</span>
+<span class="font-data-mono text-data-mono font-bold">18%</span>
+</div>
+<div class="flex gap-1 w-1/2">
+<div class="bg-surface-container-high text-on-surface-variant w-3/5 p-2 rounded-sm flex flex-col justify-between border border-outline-variant/30 hover:opacity-90 cursor-default">
+<span class="font-label-md text-[10px] uppercase tracking-wider">Narcotics</span>
+<span class="font-data-mono text-data-mono font-bold">11%</span>
+</div>
+<div class="bg-surface text-on-surface w-2/5 p-2 rounded-sm flex flex-col justify-between border border-outline-variant/30 hover:opacity-90 cursor-default">
+<span class="font-label-md text-[10px] uppercase tracking-wider">Other</span>
+<span class="font-data-mono text-data-mono font-bold">8%</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Sidebar (4 cols): AI Insights -->
+<div class="lg:col-span-4 flex flex-col h-full">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-0 flex flex-col h-full sticky top-0 overflow-hidden">
+<div class="bg-secondary-container p-md border-b border-outline-variant flex items-center gap-3">
+<span class="material-symbols-outlined text-tertiary-container">auto_awesome</span>
+<h3 class="font-headline-sm text-headline-sm text-on-secondary-container">AI Executive Summary</h3>
+</div>
+<div class="p-md flex flex-col gap-md overflow-y-auto">
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+                                Analysis of Q3 data indicates a statistically significant deviation from historical baselines, primarily driven by two key anomalies in the central districts.
+                            </p>
+<!-- Insight Item -->
+<div class="border-l-2 border-primary pl-3 py-1">
+<h4 class="font-label-md text-label-md text-on-surface flex items-center gap-2 mb-1">
+<span class="material-symbols-outlined text-[16px] text-primary">trending_up</span>
+                                    Spike in Cyber Fraud
+                                </h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                                    A 42% increase in reported phishing incidents concentrated in the IT corridors (Whitefield, Electronics City). Timing correlates with recent tax filing deadlines.
+                                </p>
+</div>
+<!-- Insight Item -->
+<div class="border-l-2 border-tertiary-fixed-dim pl-3 py-1">
+<h4 class="font-label-md text-label-md text-on-surface flex items-center gap-2 mb-1">
+<span class="material-symbols-outlined text-[16px] text-tertiary">location_searching</span>
+                                    Property Crime Shift
+                                </h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                                    Vehicle thefts have migrated from urban centers to peripheral residential zones. Peak incident times remain consistent between 01:00 and 04:00 hours.
+                                </p>
+</div>
+<!-- Actionable Recommendation -->
+<div class="bg-surface-container p-3 rounded border border-outline-variant/50 mt-2">
+<h4 class="font-label-md text-label-md text-on-surface mb-2 border-b border-outline-variant/50 pb-1">Recommended Deployment</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-3">
+                                    Increase nocturnal visible patrols in Sector 4 &amp; 7. Initiate public awareness campaign regarding digital tax fraud.
+                                </p>
+<button class="w-full py-1.5 px-3 bg-surface-container-highest border border-outline-variant text-on-surface font-label-md text-label-md rounded hover:bg-surface-dim transition-colors text-center">
+                                    Generate Full Briefing
+                                </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- JSON: Footer -->
+<footer class="w-full py-sm mt-auto border-t border-outline-variant dark:border-outline bg-surface-container-lowest dark:bg-surface-container flex flex-col md:flex-row justify-between items-center px-lg shrink-0">
+<span class="font-label-md text-label-md font-bold text-primary mb-2 md:mb-0">KrimeKartā</span>
+<div class="flex items-center gap-4">
+<a class="font-body-sm text-body-sm text-on-surface-variant dark:text-on-surface hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">Data Source Attributions</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant dark:text-on-surface hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">Privacy Policy</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant dark:text-on-surface hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">System Status</a>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant mt-2 md:mt-0 text-center md:text-right">Karnataka Police Intelligence Platform. All Rights Reserved. Official Use Only.</span>
+</footer>
+</main>
+</div>
+<!-- Chart.js Initialization -->
+<script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Common Chart Defaults (Minimalist Government Style)
+            Chart.defaults.font.family = "'IBM Plex Sans', sans-serif";
+            Chart.defaults.color = '#58413e'; // on-surface-variant
+            Chart.defaults.scale.grid.color = '#e5e2e1'; // surface-variant
+            Chart.defaults.plugins.tooltip.backgroundColor = '#ffffff';
+            Chart.defaults.plugins.tooltip.titleColor = '#1b1b1c';
+            Chart.defaults.plugins.tooltip.bodyColor = '#58413e';
+            Chart.defaults.plugins.tooltip.borderColor = '#dfbfbb';
+            Chart.defaults.plugins.tooltip.borderWidth = 1;
+            Chart.defaults.plugins.tooltip.cornerRadius = 4;
+            Chart.defaults.plugins.tooltip.padding = 12;
+
+            // 1. Trend Analysis (Area Chart)
+            const ctxTrend = document.getElementById('trendChart').getContext('2d');
+            
+            // Create Gradient for Area
+            let gradient = ctxTrend.createLinearGradient(0, 0, 0, 300);
+            gradient.addColorStop(0, 'rgba(140, 29, 24, 0.2)'); // primary-container
+            gradient.addColorStop(1, 'rgba(140, 29, 24, 0)');
+
+            new Chart(ctxTrend, {
+                type: 'line',
+                data: {
+                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6', 'Week 7', 'Week 8', 'Week 9', 'Week 10'],
+                    datasets: [{
+                        label: 'Total Incidents',
+                        data: [120, 135, 125, 145, 180, 170, 160, 190, 210, 195],
+                        borderColor: '#8c1d18', // primary-container
+                        backgroundColor: gradient,
+                        borderWidth: 2,
+                        pointBackgroundColor: '#ffffff',
+                        pointBorderColor: '#8c1d18',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        fill: true,
+                        tension: 0.3 // Smooth curve
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { borderDash: [4, 4] }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+
+            // 2. District Comparison (Bar Chart)
+            const ctxDistrict = document.getElementById('districtChart').getContext('2d');
+            new Chart(ctxDistrict, {
+                type: 'bar',
+                data: {
+                    labels: ['Central', 'North', 'South', 'East', 'West', 'Suburban'],
+                    datasets: [{
+                        label: 'Incident Volume',
+                        data: [450, 320, 290, 510, 210, 180],
+                        backgroundColor: '#ece2cb', // secondary-container
+                        hoverBackgroundColor: '#cfc6b0', // secondary-fixed-dim
+                        borderColor: '#8c716d', // outline
+                        borderWidth: 1,
+                        borderRadius: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { borderDash: [4, 4] }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body></html>

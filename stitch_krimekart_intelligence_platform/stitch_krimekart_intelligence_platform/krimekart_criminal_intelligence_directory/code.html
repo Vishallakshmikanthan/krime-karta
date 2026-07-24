@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Criminal Directory - KSP Intel Platform</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=Inter:wght@400;500;600&amp;family=Merriweather:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "error-container": "#ffdad6",
+                      "surface": "#fcf9f8",
+                      "secondary-fixed": "#ece2cb",
+                      "surface-tint": "#ab342b",
+                      "on-secondary-fixed": "#201b0d",
+                      "on-secondary-fixed-variant": "#4c4636",
+                      "inverse-on-surface": "#f3f0ef",
+                      "tertiary-fixed": "#ffdea4",
+                      "inverse-surface": "#303030",
+                      "secondary-fixed-dim": "#cfc6b0",
+                      "on-primary-fixed": "#410001",
+                      "primary": "#6b0105",
+                      "on-tertiary-fixed-variant": "#5d4200",
+                      "on-tertiary-container": "#e0b14f",
+                      "error": "#ba1a1a",
+                      "surface-container-high": "#eae7e7",
+                      "outline": "#8c716d",
+                      "tertiary-container": "#5f4400",
+                      "tertiary": "#432f00",
+                      "secondary": "#645e4c",
+                      "primary-fixed-dim": "#ffb4aa",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-container-highest": "#e5e2e1",
+                      "surface-container-low": "#f6f3f2",
+                      "on-primary-container": "#ff9d91",
+                      "tertiary-fixed-dim": "#f0bf5c",
+                      "on-primary-fixed-variant": "#8a1b17",
+                      "on-primary": "#ffffff",
+                      "on-background": "#1b1b1c",
+                      "on-error-container": "#93000a",
+                      "surface-container": "#f0eded",
+                      "outline-variant": "#dfbfbb",
+                      "surface-bright": "#fcf9f8",
+                      "on-surface-variant": "#58413e",
+                      "on-tertiary-fixed": "#261900",
+                      "surface-dim": "#dcd9d9",
+                      "on-secondary-container": "#6b6452",
+                      "primary-fixed": "#ffdad5",
+                      "on-secondary": "#ffffff",
+                      "on-error": "#ffffff",
+                      "inverse-primary": "#ffb4aa",
+                      "surface-variant": "#e5e2e1",
+                      "primary-container": "#8c1d18",
+                      "on-surface": "#1b1b1c",
+                      "secondary-container": "#ece2cb",
+                      "on-tertiary": "#ffffff",
+                      "background": "#fcf9f8"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "xs": "8px",
+                      "container-max": "1440px",
+                      "gutter": "24px",
+                      "base": "4px",
+                      "xl": "48px",
+                      "md": "24px",
+                      "sm": "16px",
+                      "lg": "32px"
+              },
+              "fontFamily": {
+                      "body-md": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "headline-lg-mobile": ["Merriweather"],
+                      "data-mono": ["IBM Plex Sans"],
+                      "body-sm": ["Inter"],
+                      "headline-md": ["Merriweather"],
+                      "headline-lg": ["Merriweather"],
+                      "headline-sm": ["Merriweather"],
+                      "display": ["Merriweather"],
+                      "label-md": ["Inter"]
+              },
+              "fontSize": {
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                      "data-mono": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                      "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                      "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "700"}],
+                      "display": ["40px", {"lineHeight": "52px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                      "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600"}]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+        }
+        .icon-fill {
+            font-variation-settings: 'FILL' 1;
+        }
+        /* Custom scrollbar for data tables */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f6f3f2; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #dfbfbb; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #8c716d; 
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md h-screen w-full flex overflow-hidden antialiased">
+<!-- SideNavBar -->
+<nav class="bg-surface-container-low fixed left-0 top-0 h-screen w-72 border-r border-outline-variant flex flex-col py-md z-40 hidden md:flex shrink-0">
+<!-- Header -->
+<div class="px-md mb-xl flex items-center gap-sm">
+<img class="w-10 h-10 object-contain rounded-full border border-outline-variant" data-alt="A highly detailed vector illustration of a traditional Indian state police emblem featuring the national lions, rendered in a strict duotone gold and dark red color palette suitable for a high-security government digital interface. Sharp lines, no gradient." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDwnFCuK3GV4j1CQ8ovxOo3Dd3D9WXnaeCkZxp4EUWDIgVtSLN_8sWaohBXhtjdglzbs6j1wnWBy24cIuOB9M_r98nyNPl1OXljyG_4cW-nlkKnEubl0AizljrHTUVkTBfoS4NpuEzCrzj8o8ktDDBnEUz9nJI8ymiheVNfXPdcyEXRW8XROle9ePU3T_le-IIK1pvR9YSXVm2v5e8jEkQA7-Q_bUo-bVlyGrW9r25zTBFCdV9NBVtWMqMs80p-pjBYtTRnRXhVxHIS"/>
+<div>
+<h1 class="font-headline-sm text-headline-sm font-bold text-primary">KSP Intel</h1>
+<p class="font-label-md text-label-md text-on-surface-variant">Intelligence Division</p>
+</div>
+</div>
+<!-- CTA -->
+<div class="px-md mb-md">
+<button class="w-full bg-primary text-on-primary font-label-md text-label-md py-xs rounded flex justify-center items-center gap-xs hover:bg-primary-container transition-colors">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                New Investigation
+            </button>
+</div>
+<!-- Main Tabs -->
+<div class="flex-1 overflow-y-auto px-xs space-y-1">
+<a class="flex items-center gap-sm px-sm py-xs text-on-surface-variant hover:bg-surface-container-highest mx-2 my-1 rounded-lg transition-all duration-200 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">map</span>
+                GIS Maps
+            </a>
+<a class="flex items-center gap-sm px-sm py-xs text-on-surface-variant hover:bg-surface-container-highest mx-2 my-1 rounded-lg transition-all duration-200 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">psychology</span>
+                AI Modules
+            </a>
+<a class="flex items-center gap-sm px-sm py-xs bg-primary text-on-primary rounded-lg mx-2 my-1 transition-all duration-200 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px] icon-fill">visibility</span>
+                Intelligence
+            </a>
+<a class="flex items-center gap-sm px-sm py-xs text-on-surface-variant hover:bg-surface-container-highest mx-2 my-1 rounded-lg transition-all duration-200 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">description</span>
+                Reports
+            </a>
+<a class="flex items-center gap-sm px-sm py-xs text-on-surface-variant hover:bg-surface-container-highest mx-2 my-1 rounded-lg transition-all duration-200 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">groups</span>
+                Personnel
+            </a>
+</div>
+<!-- Footer Tabs -->
+<div class="mt-auto px-xs border-t border-outline-variant pt-sm space-y-1">
+<a class="flex items-center gap-sm px-sm py-xs text-on-surface-variant hover:bg-surface-container-highest mx-2 my-1 rounded-lg transition-all duration-200 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+                Settings
+            </a>
+<a class="flex items-center gap-sm px-sm py-xs text-on-surface-variant hover:bg-surface-container-highest mx-2 my-1 rounded-lg transition-all duration-200 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+                Log Out
+            </a>
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<div class="flex-1 flex flex-col md:ml-72 min-h-screen relative">
+<!-- TopAppBar -->
+<header class="bg-surface flex justify-between items-center w-full px-md h-16 border-b border-outline-variant sticky top-0 z-30 shrink-0">
+<!-- Search Bar On Left -->
+<div class="flex-1 max-w-md">
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-sm text-on-surface-variant text-[20px]">search</span>
+<input class="w-full pl-xl pr-sm py-xs bg-surface-container-lowest border border-outline-variant rounded focus:outline-none focus:border-tertiary-fixed focus:ring-1 focus:ring-tertiary-fixed font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant transition-colors" placeholder="Global Search (Entities, Cases, Officers)..." type="text"/>
+</div>
+</div>
+<!-- Title/Brand (Center Mobile, Hidden Desktop to avoid clutter with sidebar) -->
+<div class="hidden md:flex flex-1 justify-center">
+<span class="font-headline-md text-headline-md font-bold text-primary">KSP Intel Platform</span>
+</div>
+<!-- Trailing Icons -->
+<div class="flex-1 flex justify-end items-center gap-sm">
+<button class="p-xs text-on-surface-variant hover:bg-surface-container-high transition-colors rounded cursor-pointer active:opacity-80 flex items-center justify-center">
+<span class="material-symbols-outlined text-[24px]">notifications</span>
+</button>
+<button class="p-xs text-on-surface-variant hover:bg-surface-container-high transition-colors rounded cursor-pointer active:opacity-80 flex items-center justify-center">
+<span class="material-symbols-outlined text-[24px]">settings</span>
+</button>
+<button class="p-xs text-on-surface-variant hover:bg-surface-container-high transition-colors rounded cursor-pointer active:opacity-80 flex items-center justify-center">
+<span class="material-symbols-outlined text-[24px]">help</span>
+</button>
+<div class="w-8 h-8 rounded-full border border-outline-variant overflow-hidden ml-xs cursor-pointer">
+<img alt="Officer Profile" class="w-full h-full object-cover" data-alt="A professional headshot of an Indian law enforcement officer in standard khaki uniform. Serious expression, neutral grey background, high resolution, soft studio lighting conveying authority and trust." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA9yoRJcvJuQlU_j4NJ97Z1InJiXjafIWUqgYKLDDv14nTXy2t4_wWP8xD-2AVqNf-78eEip5MDt9Z58n9OBfT6fwDG4zQkoEuznRwcTrDBeKgSwmQ-bwP4Fg93FhpPRKU9K1hXiSqIJzEd8xADzkZqdvzYtN1TWXbIGcOBJuAaPVYHJxaiWs5ukxPZ_ULM35snY8uSguMCotl81DfwScyuoYDiBRcmRKJNkCkVhcyS28N3Vl8MVJcuq036tsYESPaL3i1ggR_57GrR"/>
+</div>
+</div>
+</header>
+<!-- Page Content Canvas -->
+<main class="flex-1 overflow-y-auto p-md md:p-gutter flex flex-col gap-gutter bg-surface">
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-md border-b border-outline-variant pb-sm">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-primary tracking-tight">Criminal Directory</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Consolidated intelligence database of known entities and associates.</p>
+</div>
+<div class="flex items-center gap-sm">
+<button class="px-sm py-xs bg-surface-container-lowest border border-outline-variant text-on-surface font-label-md text-label-md rounded flex items-center gap-xs hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-[18px]">download</span>
+                        Export List
+                    </button>
+<button class="px-sm py-xs bg-primary text-on-primary font-label-md text-label-md rounded flex items-center gap-xs hover:bg-primary-container transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[18px]">person_add</span>
+                        Add Entity
+                    </button>
+</div>
+</div>
+<!-- Advanced Filters Bar -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded flex flex-col md:flex-row items-center gap-sm p-sm">
+<div class="flex items-center gap-xs text-on-surface-variant font-label-md text-label-md shrink-0 pr-sm border-r border-outline-variant">
+<span class="material-symbols-outlined text-[20px]">filter_list</span>
+                    FILTERS
+                </div>
+<div class="grid grid-cols-1 md:grid-cols-4 gap-sm w-full">
+<div class="flex flex-col gap-base">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase text-[10px]">Crime Category</label>
+<select class="w-full bg-surface border border-outline-variant rounded px-xs py-xs font-body-sm text-body-sm text-on-surface focus:outline-none focus:border-primary">
+<option>All Categories</option>
+<option>Organized Crime</option>
+<option>Narcotics</option>
+<option>Financial Fraud</option>
+<option>Cybercrime</option>
+</select>
+</div>
+<div class="flex flex-col gap-base">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase text-[10px]">District</label>
+<select class="w-full bg-surface border border-outline-variant rounded px-xs py-xs font-body-sm text-body-sm text-on-surface focus:outline-none focus:border-primary">
+<option>All Districts</option>
+<option>Bengaluru Urban</option>
+<option>Mysuru</option>
+<option>Mangaluru</option>
+<option>Hubballi</option>
+</select>
+</div>
+<div class="flex flex-col gap-base">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase text-[10px]">Risk Level</label>
+<select class="w-full bg-surface border border-outline-variant rounded px-xs py-xs font-body-sm text-body-sm text-on-surface focus:outline-none focus:border-primary">
+<option>All Levels</option>
+<option>High Risk</option>
+<option>Medium Risk</option>
+<option>Low Risk</option>
+</select>
+</div>
+<div class="flex flex-col gap-base justify-end">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-xs top-1/2 -translate-y-1/2 text-on-surface-variant text-[16px]">search</span>
+<input class="w-full pl-xl pr-sm py-xs bg-surface border border-outline-variant rounded focus:outline-none focus:border-primary font-body-sm text-body-sm text-on-surface" placeholder="Filter by Name/ID..." type="text"/>
+</div>
+</div>
+</div>
+</div>
+<!-- Data Table Section -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded flex flex-col overflow-hidden shadow-sm">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse min-w-[900px]">
+<thead class="bg-secondary-container border-b border-outline-variant sticky top-0">
+<tr>
+<th class="p-sm font-data-mono text-data-mono text-on-surface uppercase tracking-wider w-16 text-center">Photo</th>
+<th class="p-sm font-data-mono text-data-mono text-on-surface uppercase tracking-wider">Name &amp; Aliases</th>
+<th class="p-sm font-data-mono text-data-mono text-on-surface uppercase tracking-wider">ID Number</th>
+<th class="p-sm font-data-mono text-data-mono text-on-surface uppercase tracking-wider">Risk Level</th>
+<th class="p-sm font-data-mono text-data-mono text-on-surface uppercase tracking-wider">Last Known Location</th>
+<th class="p-sm font-data-mono text-data-mono text-on-surface uppercase tracking-wider">Status</th>
+<th class="p-sm font-data-mono text-data-mono text-on-surface uppercase tracking-wider text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant bg-surface-container-lowest">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low transition-colors group cursor-pointer">
+<td class="p-sm align-middle text-center">
+<img class="w-10 h-10 object-cover rounded mx-auto border border-outline-variant grayscale" data-alt="A mugshot-style low-resolution photograph of an individual, neutral expression, against a plain gray background. The image should look like an official law enforcement file photo, slightly grainy, desaturated." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCOcXq633FC-GDQrtKaBJYgcZjqSV6rucVkEkTk2B5INQ-11q5FvMLl5GWtGwcdF-2wprNBJL-XFe4kWzu4dq9RrH2W5rQZdBrd5PvwO43EUHJiTu-OPKWyagNeeUKL-TULr_jm6e3TGD6af-ArOthztiGxzu1sORRbLa1tJKACo_l7IkX02shGtoIc66bRunILTLBti0VlY3D8ujCEEpe6UlVoB7KL9GSj5vr7c08Q_uuSUpelOFm8VjPJ67MDxepROph9mM1iZJx0"/>
+</td>
+<td class="p-sm align-middle">
+<div class="font-label-md text-label-md text-on-surface text-[14px]">Ravi Kumar</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant text-[12px]">Alias: "Billa"</div>
+</td>
+<td class="p-sm align-middle font-data-mono text-data-mono text-on-surface-variant">
+                                    KSP-2023-8901
+                                </td>
+<td class="p-sm align-middle">
+<span class="inline-flex items-center px-2 py-1 rounded bg-error-container text-on-error-container font-label-md text-[10px] uppercase tracking-wide border border-error/20">
+                                        High
+                                    </span>
+</td>
+<td class="p-sm align-middle font-body-sm text-body-sm text-on-surface">
+                                    Shivajinagar, Bengaluru
+                                </td>
+<td class="p-sm align-middle">
+<div class="flex items-center gap-xs font-body-sm text-body-sm text-primary">
+<div class="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+                                        Active
+                                    </div>
+</td>
+<td class="p-sm align-middle text-right">
+<button class="text-on-surface-variant hover:text-primary transition-colors p-xs rounded hover:bg-surface-container-highest opacity-0 group-hover:opacity-100 focus:opacity-100">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low transition-colors group cursor-pointer">
+<td class="p-sm align-middle text-center">
+<img class="w-10 h-10 object-cover rounded mx-auto border border-outline-variant grayscale" data-alt="A mugshot-style low-resolution photograph of a middle-aged male, neutral expression, against a plain gray background. The image should look like an official law enforcement file photo, slightly grainy, desaturated." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJv5u66p9JooUJJu8kIHfQvFPjECmNoPgCl5V-D3AbM5ZyoxFAuVT0T29oG7-MqOLAa9daG8-__aAsr5d15CUiE7F4aLGJN0Dm11lkrRem3Y3ZLAP82MzbVc8QtFfDtZVmLSsnMv-AmASJsfSkqGuLKNlkKpDBIX2fM05LpmG2Ylrj5F1j-78XYKFjV78Wzkv8vXBG-1CYzjvOf2VPETHOsliUkg2rNAJMoDdbo6qQ0vkHwyWuSafwjVCf2fyRuZZe6ryRfM-VoR5r"/>
+</td>
+<td class="p-sm align-middle">
+<div class="font-label-md text-label-md text-on-surface text-[14px]">Syed Abbas</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant text-[12px]">Alias: "Anna"</div>
+</td>
+<td class="p-sm align-middle font-data-mono text-data-mono text-on-surface-variant">
+                                    KSP-2021-4432
+                                </td>
+<td class="p-sm align-middle">
+<span class="inline-flex items-center px-2 py-1 rounded bg-surface-variant text-on-surface-variant font-label-md text-[10px] uppercase tracking-wide border border-outline-variant">
+                                        Low
+                                    </span>
+</td>
+<td class="p-sm align-middle font-body-sm text-body-sm text-on-surface">
+                                    Central Prison, Parappana Agrahara
+                                </td>
+<td class="p-sm align-middle">
+<div class="flex items-center gap-xs font-body-sm text-body-sm text-on-surface-variant">
+<div class="w-2 h-2 rounded-full bg-outline"></div>
+                                        In Custody
+                                    </div>
+</td>
+<td class="p-sm align-middle text-right">
+<button class="text-on-surface-variant hover:text-primary transition-colors p-xs rounded hover:bg-surface-container-highest opacity-0 group-hover:opacity-100 focus:opacity-100">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low transition-colors group cursor-pointer">
+<td class="p-sm align-middle text-center">
+<div class="w-10 h-10 rounded bg-surface-container-highest border border-outline-variant mx-auto flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">person</span>
+</div>
+</td>
+<td class="p-sm align-middle">
+<div class="font-label-md text-label-md text-on-surface text-[14px]">Unknown Entity</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant text-[12px]">Linked to Case #992</div>
+</td>
+<td class="p-sm align-middle font-data-mono text-data-mono text-on-surface-variant">
+                                    PENDING-ID
+                                </td>
+<td class="p-sm align-middle">
+<span class="inline-flex items-center px-2 py-1 rounded bg-tertiary-container text-on-tertiary-container font-label-md text-[10px] uppercase tracking-wide border border-tertiary/20">
+                                        Medium
+                                    </span>
+</td>
+<td class="p-sm align-middle font-body-sm text-body-sm text-on-surface text-on-surface-variant italic">
+                                    Location Unknown
+                                </td>
+<td class="p-sm align-middle">
+<div class="flex items-center gap-xs font-body-sm text-body-sm text-primary">
+<div class="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+                                        Active
+                                    </div>
+</td>
+<td class="p-sm align-middle text-right">
+<button class="text-on-surface-variant hover:text-primary transition-colors p-xs rounded hover:bg-surface-container-highest opacity-0 group-hover:opacity-100 focus:opacity-100">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Pagination/Footer -->
+<div class="bg-surface border-t border-outline-variant p-sm flex items-center justify-between font-body-sm text-body-sm text-on-surface-variant">
+<div>Showing 1 to 3 of 1,245 entries</div>
+<div class="flex items-center gap-xs">
+<button class="p-xs rounded hover:bg-surface-container-highest border border-outline-variant bg-surface-container-lowest disabled:opacity-50 flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">chevron_left</span>
+</button>
+<button class="p-xs rounded hover:bg-surface-container-highest border border-outline-variant bg-surface-container-lowest flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>
