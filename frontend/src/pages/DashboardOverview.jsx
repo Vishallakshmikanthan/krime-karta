@@ -1,7 +1,17 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useApiResource } from '../hooks/useApiResource';
 
 const DashboardOverview = () => {
+  const { data } = useApiResource('/dashboard/overview', dashboardFallback);
+  const kpis = data.kpis;
+  const trendPoints = data.trends.map((item, index) => {
+    const x = index * (800 / Math.max(data.trends.length - 1, 1));
+    const y = 275 - (item.count / 160) * 220;
+    return { ...item, x, y };
+  });
+  const trendPath = trendPoints.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`).join(' ');
+
   return (
     <>
       <div className="bg-background text-on-surface flex flex-col md:flex-row min-h-screen">
@@ -94,9 +104,9 @@ const DashboardOverview = () => {
 <span className="material-symbols-outlined text-secondary text-[20px]">gavel</span>
 </div>
 <div className="flex items-end gap-2">
-<span className="font-data-mono text-[32px] leading-tight font-bold text-on-surface">142</span>
+<span className="font-data-mono text-[32px] leading-tight font-bold text-on-surface">{kpis.totalCrimes24h}</span>
 <span className="font-label-md text-label-md text-primary flex items-center mb-1">
-<span className="material-symbols-outlined text-[14px]">arrow_upward</span> 12%
+<span className="material-symbols-outlined text-[14px]">arrow_upward</span> {kpis.crimeChangePct}%
                         </span>
 </div>
 </div>
@@ -107,7 +117,7 @@ const DashboardOverview = () => {
 <span className="material-symbols-outlined text-error text-[20px]">warning</span>
 </div>
 <div className="relative z-10 flex items-end gap-2">
-<span className="font-data-mono text-[32px] leading-tight font-bold text-error">ELEVATED</span>
+<span className="font-data-mono text-[32px] leading-tight font-bold text-error">{kpis.aiRiskLevel}</span>
 </div>
 </div>
 <div className="bg-surface-container-lowest border border-outline-variant rounded p-sm flex flex-col justify-between">
@@ -116,9 +126,9 @@ const DashboardOverview = () => {
 <span className="material-symbols-outlined text-secondary text-[20px]">local_police</span>
 </div>
 <div className="flex items-end gap-2">
-<span className="font-data-mono text-[32px] leading-tight font-bold text-on-surface">87</span>
+<span className="font-data-mono text-[32px] leading-tight font-bold text-on-surface">{kpis.activePatrols}</span>
 <span className="font-label-md text-label-md text-secondary flex items-center mb-1">
-                            of 120 units
+                            of {kpis.patrolCapacity} units
                         </span>
 </div>
 </div>
@@ -128,9 +138,9 @@ const DashboardOverview = () => {
 <span className="material-symbols-outlined text-secondary text-[20px]">task_alt</span>
 </div>
 <div className="flex items-end gap-2">
-<span className="font-data-mono text-[32px] leading-tight font-bold text-on-surface">45</span>
+<span className="font-data-mono text-[32px] leading-tight font-bold text-on-surface">{kpis.resolvedCases}</span>
 <span className="font-label-md text-label-md text-on-secondary-container flex items-center mb-1">
-<span className="material-symbols-outlined text-[14px]">arrow_upward</span> 5%
+<span className="material-symbols-outlined text-[14px]">arrow_upward</span> {kpis.resolvedChangePct}%
                         </span>
 </div>
 </div>
@@ -154,26 +164,13 @@ const DashboardOverview = () => {
 <line className="chart-grid" x1="0" x2="800" y1="200" y2="200"></line>
 <line className="chart-grid" x1="0" x2="800" y1="275" y2="275"></line>
 {/* Line */}
-<path className="chart-line" d="M 0 250 L 100 220 L 200 180 L 300 240 L 400 150 L 500 120 L 600 160 L 700 80 L 800 110"></path>
+<path className="chart-line" d={trendPath}></path>
 {/* Data points */}
-<circle cx="100" cy="220" fill="#8c1d18" r="4"></circle>
-<circle cx="200" cy="180" fill="#8c1d18" r="4"></circle>
-<circle cx="300" cy="240" fill="#8c1d18" r="4"></circle>
-<circle cx="400" cy="150" fill="#8c1d18" r="4"></circle>
-<circle cx="500" cy="120" fill="#8c1d18" r="4"></circle>
-<circle cx="600" cy="160" fill="#8c1d18" r="4"></circle>
-<circle cx="700" cy="80" fill="#8c1d18" r="4"></circle>
-<circle cx="800" cy="110" fill="#8c1d18" r="4"></circle>
+{trendPoints.map((point) => <circle cx={point.x} cy={point.y} fill="#8c1d18" key={point.day} r="4"></circle>)}
 </svg>
 {/* X Axis Labels */}
 <div className="absolute bottom-0 left-0 w-full flex justify-between font-data-mono text-[10px] text-on-surface-variant pt-2">
-<span>Mon</span>
-<span>Tue</span>
-<span>Wed</span>
-<span>Thu</span>
-<span>Fri</span>
-<span>Sat</span>
-<span>Sun</span>
+{data.trends.map((item) => <span key={item.day}>{item.day}</span>)}
 </div>
 </div>
 </div>
@@ -200,45 +197,23 @@ const DashboardOverview = () => {
 <span className="material-symbols-outlined text-primary">campaign</span>
                             Priority Hotspots
                         </h2>
-<span className="font-label-md text-label-md bg-error/10 text-error px-2 py-1 rounded">3 Critical</span>
+<span className="font-label-md text-label-md bg-error/10 text-error px-2 py-1 rounded">{data.hotspots.filter((item) => item.severity === 'High').length} Critical</span>
 </div>
 <ul className="space-y-3">
-<li className="flex items-start gap-3 p-3 bg-surface border border-outline-variant rounded hover:border-primary transition-colors cursor-pointer">
+{data.hotspots.slice(0, 3).map((hotspot) => (
+<li className="flex items-start gap-3 p-3 bg-surface border border-outline-variant rounded hover:border-primary transition-colors cursor-pointer" key={hotspot.id}>
 <div className="mt-1">
-<span className="material-symbols-outlined text-error fill text-[20px]">error</span>
+<span className={`material-symbols-outlined ${hotspot.severity === 'High' ? 'text-error' : 'text-on-tertiary-container'} fill text-[20px]`}>{hotspot.severity === 'High' ? 'error' : 'warning'}</span>
 </div>
 <div className="flex-1">
 <div className="flex justify-between items-center">
-<span className="font-body-md text-body-md font-bold text-on-surface">Shivajinagar Market</span>
-<span className="font-data-mono text-data-mono text-error">94% Confidence</span>
+<span className="font-body-md text-body-md font-bold text-on-surface">{hotspot.name}</span>
+<span className="font-data-mono text-data-mono text-error">{hotspot.confidence}% Confidence</span>
 </div>
-<p className="font-body-sm text-body-sm text-on-surface-variant mt-1">Predicted spike in petty theft next 2 hours based on historical match event.</p>
-</div>
-</li>
-<li className="flex items-start gap-3 p-3 bg-surface border border-outline-variant rounded hover:border-primary transition-colors cursor-pointer">
-<div className="mt-1">
-<span className="material-symbols-outlined text-on-tertiary-container text-[20px]">warning</span>
-</div>
-<div className="flex-1">
-<div className="flex justify-between items-center">
-<span className="font-body-md text-body-md font-bold text-on-surface">Indiranagar 100ft Rd</span>
-<span className="font-data-mono text-data-mono text-on-tertiary-container">82% Confidence</span>
-</div>
-<p className="font-body-sm text-body-sm text-on-surface-variant mt-1">Anomalous traffic pattern detected. Potential organized gathering.</p>
+<p className="font-body-sm text-body-sm text-on-surface-variant mt-1">{hotspot.description}</p>
 </div>
 </li>
-<li className="flex items-start gap-3 p-3 bg-surface border border-outline-variant rounded hover:border-primary transition-colors cursor-pointer">
-<div className="mt-1">
-<span className="material-symbols-outlined text-on-tertiary-container text-[20px]">warning</span>
-</div>
-<div className="flex-1">
-<div className="flex justify-between items-center">
-<span className="font-body-md text-body-md font-bold text-on-surface">Koramangala Block 5</span>
-<span className="font-data-mono text-data-mono text-on-tertiary-container">78% Confidence</span>
-</div>
-<p className="font-body-sm text-body-sm text-on-surface-variant mt-1">Recurring late-night disturbance reports clustered in sector 4B.</p>
-</div>
-</li>
+))}
 </ul>
 </div>
 {/* District Summary Table */}
@@ -257,36 +232,14 @@ const DashboardOverview = () => {
 </tr>
 </thead>
 <tbody className="font-data-mono text-data-mono text-on-surface">
-<tr className="border-b border-outline-variant bg-surface-container-lowest">
-<td className="px-4 py-3">Bangalore Central</td>
-<td className="px-4 py-3 text-right">45</td>
-<td className="px-4 py-3 text-right">24</td>
-<td className="px-4 py-3 text-center"><span className="w-2 h-2 rounded-full bg-error inline-block"></span></td>
+{data.districtSummaries.map((district, index) => (
+<tr className={`border-b border-outline-variant ${index % 2 === 0 ? 'bg-surface-container-lowest' : 'bg-surface'}`} key={district.id}>
+<td className="px-4 py-3">{district.name}</td>
+<td className="px-4 py-3 text-right">{district.totalIncidents}</td>
+<td className="px-4 py-3 text-right">{district.activeUnits}</td>
+<td className="px-4 py-3 text-center"><span className={`w-2 h-2 rounded-full ${district.status === 'critical' ? 'bg-error' : district.status === 'elevated' ? 'bg-on-tertiary-container' : 'bg-secondary'} inline-block`}></span></td>
 </tr>
-<tr className="border-b border-outline-variant bg-surface">
-<td className="px-4 py-3">Mysuru City</td>
-<td className="px-4 py-3 text-right">18</td>
-<td className="px-4 py-3 text-right">12</td>
-<td className="px-4 py-3 text-center"><span className="w-2 h-2 rounded-full bg-on-tertiary-container inline-block"></span></td>
-</tr>
-<tr className="border-b border-outline-variant bg-surface-container-lowest">
-<td className="px-4 py-3">Mangaluru</td>
-<td className="px-4 py-3 text-right">12</td>
-<td className="px-4 py-3 text-right">8</td>
-<td className="px-4 py-3 text-center"><span className="w-2 h-2 rounded-full bg-secondary inline-block"></span></td>
-</tr>
-<tr className="border-b border-outline-variant bg-surface">
-<td className="px-4 py-3">Hubballi-Dharwad</td>
-<td className="px-4 py-3 text-right">9</td>
-<td className="px-4 py-3 text-right">6</td>
-<td className="px-4 py-3 text-center"><span className="w-2 h-2 rounded-full bg-secondary inline-block"></span></td>
-</tr>
-<tr className="bg-surface-container-lowest">
-<td className="px-4 py-3">Belagavi</td>
-<td className="px-4 py-3 text-right">7</td>
-<td className="px-4 py-3 text-right">5</td>
-<td className="px-4 py-3 text-center"><span className="w-2 h-2 rounded-full bg-secondary inline-block"></span></td>
-</tr>
+))}
 </tbody>
 </table>
 </div>
@@ -314,3 +267,30 @@ const DashboardOverview = () => {
 };
 
 export default DashboardOverview;
+
+const dashboardFallback = {
+  kpis: {
+    totalCrimes24h: 142,
+    crimeChangePct: 12,
+    aiRiskLevel: 'ELEVATED',
+    activePatrols: 87,
+    patrolCapacity: 120,
+    resolvedCases: 45,
+    resolvedChangePct: 5
+  },
+  trends: [
+    { day: 'Mon', count: 87 },
+    { day: 'Tue', count: 96 },
+    { day: 'Wed', count: 113 },
+    { day: 'Thu', count: 91 },
+    { day: 'Fri', count: 128 },
+    { day: 'Sat', count: 139 },
+    { day: 'Sun', count: 122 }
+  ],
+  hotspots: [
+    { id: 'local-1', name: 'Shivajinagar Market', confidence: 94, severity: 'High', description: 'Predicted spike in petty theft next 2 hours based on historical match event.' }
+  ],
+  districtSummaries: [
+    { id: 'blr', name: 'Bengaluru Central', totalIncidents: 45, activeUnits: 24, status: 'critical' }
+  ]
+};

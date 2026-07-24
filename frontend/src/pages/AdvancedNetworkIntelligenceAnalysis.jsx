@@ -1,7 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useApiResource } from '../hooks/useApiResource';
 
 const AdvancedNetworkIntelligenceAnalysis = () => {
+  const { data } = useApiResource('/network/graph', networkFallback);
+  const selected = data.selected || networkFallback.selected;
+
   return (
     <>
       <div className="bg-surface text-on-surface font-body-md min-h-screen flex flex-col antialiased">
@@ -115,7 +119,7 @@ const AdvancedNetworkIntelligenceAnalysis = () => {
 <span className="material-symbols-outlined text-[14px]" data-icon="chevron_right">chevron_right</span>
 <span>Network Analysis</span>
 </div>
-<h2 className="font-headline-sm text-headline-sm font-bold text-on-surface">Operation Red Sandalwood</h2>
+<h2 className="font-headline-sm text-headline-sm font-bold text-on-surface">{data.operation}</h2>
 </div>
 <div className="flex gap-2">
 <button className="px-3 py-1.5 border border-outline-variant rounded font-label-md text-label-md hover:bg-surface-container-low flex items-center gap-1">
@@ -246,8 +250,8 @@ const AdvancedNetworkIntelligenceAnalysis = () => {
 <img alt="Suspect Photo" className="w-full h-full object-cover" data-alt="Mugshot style photograph of a middle-aged suspect, serious expression, high contrast lighting, neutral background, official police record style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBCVT7gnmWtgAsyMx6EyNxyi-dYMp133pdsyIICBxVdfsDkm7Hc26ZwDrLu2oBDanYN_TVD4kwzwr-wb2vEDlxdH6-bQClG_JnvfC5D9mtXhNPXAQZq1WeRhgG9N2jSdyiGYsEag1AsInKJHti4Eq1rYkn2L9XZZVabAW3ogwSWrjP3eKwYbmQRH9rnxKPZINk8SXuSKIvBOpatTM3EFKhBY1gmMSdiMQJh_dLAdyYljUDzgtTE9-rMrBSIASJUPHYJQ-TmTknc40Wa"/>
 </div>
 <div>
-<h4 className="font-headline-sm text-[16px] font-bold text-on-surface leading-tight mb-1">M. Reddy</h4>
-<span className="inline-block px-2 py-0.5 bg-error-container text-on-error-container rounded text-[10px] font-bold tracking-wider uppercase">High Risk</span>
+<h4 className="font-headline-sm text-[16px] font-bold text-on-surface leading-tight mb-1">{selected.name}</h4>
+<span className="inline-block px-2 py-0.5 bg-error-container text-on-error-container rounded text-[10px] font-bold tracking-wider uppercase">{selected.risk} Risk</span>
 </div>
 </div>
 </div>
@@ -258,15 +262,15 @@ const AdvancedNetworkIntelligenceAnalysis = () => {
 <div className="space-y-3 font-body-sm">
 <div className="grid grid-cols-3 gap-2">
 <div className="text-on-surface-variant">ID Ref:</div>
-<div className="col-span-2 font-data-mono">KSP-2024-89A</div>
+<div className="col-span-2 font-data-mono">{selected.id}</div>
 </div>
 <div className="grid grid-cols-3 gap-2">
 <div className="text-on-surface-variant">Aliases:</div>
-<div className="col-span-2">"Anna", "RM"</div>
+<div className="col-span-2">{selected.aliases?.map((alias) => `"${alias}"`).join(', ')}</div>
 </div>
 <div className="grid grid-cols-3 gap-2">
 <div className="text-on-surface-variant">Status:</div>
-<div className="col-span-2 text-error font-semibold">Active Warrant</div>
+<div className="col-span-2 text-error font-semibold">{selected.status}</div>
 </div>
 </div>
 </div>
@@ -276,14 +280,14 @@ const AdvancedNetworkIntelligenceAnalysis = () => {
 <div className="grid grid-cols-1 gap-2">
 <div className="p-3 bg-surface-container-lowest border border-outline-variant rounded">
 <div className="flex justify-between items-center mb-1">
-<span className="font-data-mono text-[12px] text-primary">FIR 142/2023</span>
+<span className="font-data-mono text-[12px] text-primary">{selected.cases?.[0] || 'FIR 142/2023'}</span>
 <span className="material-symbols-outlined text-[14px] text-on-surface-variant" data-icon="open_in_new">open_in_new</span>
 </div>
 <div className="font-body-sm text-[13px]">Smuggling - Sandalwood</div>
 </div>
 <div className="p-3 bg-surface-container-lowest border border-outline-variant rounded">
 <div className="flex justify-between items-center mb-1">
-<span className="font-data-mono text-[12px] text-primary">FIR 089/2024</span>
+<span className="font-data-mono text-[12px] text-primary">{selected.cases?.[1] || 'FIR 089/2024'}</span>
 <span className="material-symbols-outlined text-[14px] text-on-surface-variant" data-icon="open_in_new">open_in_new</span>
 </div>
 <div className="font-body-sm text-[13px]">Hawala Transactions</div>
@@ -306,3 +310,15 @@ const AdvancedNetworkIntelligenceAnalysis = () => {
 };
 
 export default AdvancedNetworkIntelligenceAnalysis;
+
+const networkFallback = {
+  operation: 'Operation Red Sandalwood',
+  selected: {
+    id: 'KSP-2024-89A',
+    name: 'M. Reddy',
+    aliases: ['Anna', 'RM'],
+    risk: 'High',
+    status: 'Active Warrant',
+    cases: ['FIR 142/2023', 'FIR 089/2024']
+  }
+};

@@ -1,7 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useApiResource } from '../hooks/useApiResource';
 
 const NationalCrimeRecordsDatabase = () => {
+  const { data } = useApiResource('/crimes?limit=25', { items: [], total: 1204, page: 1, limit: 25 });
+  const visibleCount = data.items.length || 24;
+
   return (
     <>
       <div className="bg-surface text-on-surface font-body-md antialiased overflow-hidden selection:bg-tertiary-fixed-dim selection:text-on-tertiary-fixed-variant">
@@ -159,7 +163,7 @@ const NationalCrimeRecordsDatabase = () => {
 <div className="bg-surface-container-lowest border border-outline-variant rounded flex-1 flex flex-col overflow-hidden shadow-sm">
 {/* Table Header/Toolbar inner */}
 <div className="flex justify-between items-center px-sm py-xs border-b border-outline-variant bg-surface-container-lowest">
-<span className="font-label-md text-label-md text-on-surface-variant">Showing 24 of 1,204 records</span>
+<span className="font-label-md text-label-md text-on-surface-variant">Showing {visibleCount} of {data.total.toLocaleString()} records</span>
 <div className="flex gap-2">
 <button className="p-1 text-on-surface-variant hover:bg-surface-container hover:text-primary rounded transition-colors"><span className="material-symbols-outlined text-[18px]">view_column</span></button>
 <button className="p-1 text-on-surface-variant hover:bg-surface-container hover:text-primary rounded transition-colors"><span className="material-symbols-outlined text-[18px]">refresh</span></button>
@@ -210,7 +214,7 @@ const NationalCrimeRecordsDatabase = () => {
 </tr>
 {/* Row 1: Expanded Evidence Preview Panel */}
 <tr className="bg-surface-container-lowest border-b-2 border-outline-variant">
-<td className="p-0" colspan="8">
+<td className="p-0" colSpan="8">
 <div className="p-md bg-surface-container-low border-l-4 border-l-error inset-shadow-sm flex gap-md">
 {/* Mini Bento Grid for Preview */}
 <div className="w-64 shrink-0 flex flex-col gap-2">
@@ -333,7 +337,7 @@ const NationalCrimeRecordsDatabase = () => {
 </select>
 </div>
 <div className="flex items-center gap-4 font-label-md text-label-md text-on-surface-variant">
-<span>1-24 of 1,204</span>
+<span>1-{visibleCount} of {data.total.toLocaleString()}</span>
 <div className="flex gap-1">
 <button className="p-1 rounded hover:bg-surface-container-high disabled:opacity-50" disabled=""><span className="material-symbols-outlined text-[18px]">chevron_left</span></button>
 <button className="p-1 rounded hover:bg-surface-container-high"><span className="material-symbols-outlined text-[18px]">chevron_right</span></button>

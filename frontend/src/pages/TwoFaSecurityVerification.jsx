@@ -1,8 +1,37 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { setSession, verifyOtp } from '../lib/api';
 
 const TwoFaSecurityVerification = () => {
   const navigate = useNavigate();
+  const [digits, setDigits] = useState(['1', '2', '3', '4', '5', '6']);
+  const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const otp = useMemo(() => digits.join(''), [digits]);
+  const serviceId = localStorage.getItem('krimekarta.pendingServiceId') || 'KA-P-12345';
+  const mfaToken = localStorage.getItem('krimekarta.pendingMfaToken');
+
+  const updateDigit = (index, value) => {
+    const next = [...digits];
+    next[index] = value.replace(/\D/g, '').slice(-1);
+    setDigits(next);
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setError('');
+    setSubmitting(true);
+    try {
+      const session = await verifyOtp(serviceId, mfaToken, otp);
+      setSession(session);
+      navigate('/dashboard');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <>
       <div className="bg-surface text-on-surface min-h-screen flex items-center justify-center p-sm md:p-md">
@@ -21,19 +50,17 @@ const TwoFaSecurityVerification = () => {
 <h2 className="font-headline-sm text-headline-sm text-on-surface mb-xs">Two-Factor Authentication Required</h2>
 <p className="font-body-md text-body-md text-on-surface-variant">Enter the 6-digit OTP sent to your registered device to continue.</p>
 </div>
-<form className="flex flex-col gap-md" onSubmit={(e) => { e.preventDefault(); navigate('/dashboard'); }}>
+<form className="flex flex-col gap-md" onSubmit={handleSubmit}>
 {/* OTP Inputs */}
 <div className="flex flex-col gap-xs">
 <label className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider" htmlFor="otp-1">One-Time Password</label>
 <div className="flex justify-between gap-base" id="otp-container">
-<input aria-label="Digit 1" className="w-full h-12 text-center font-data-mono text-headline-sm border border-outline-variant rounded bg-surface-container-lowest text-on-surface focus:outline-none focus:ring-2 focus:ring-tertiary-container focus:border-transparent transition-all" id="otp-1" maxLength="1" type="text"/>
-<input aria-label="Digit 2" className="w-full h-12 text-center font-data-mono text-headline-sm border border-outline-variant rounded bg-surface-container-lowest text-on-surface focus:outline-none focus:ring-2 focus:ring-tertiary-container focus:border-transparent transition-all" id="otp-2" maxLength="1" type="text"/>
-<input aria-label="Digit 3" className="w-full h-12 text-center font-data-mono text-headline-sm border border-outline-variant rounded bg-surface-container-lowest text-on-surface focus:outline-none focus:ring-2 focus:ring-tertiary-container focus:border-transparent transition-all" id="otp-3" maxLength="1" type="text"/>
-<input aria-label="Digit 4" className="w-full h-12 text-center font-data-mono text-headline-sm border border-outline-variant rounded bg-surface-container-lowest text-on-surface focus:outline-none focus:ring-2 focus:ring-tertiary-container focus:border-transparent transition-all" id="otp-4" maxLength="1" type="text"/>
-<input aria-label="Digit 5" className="w-full h-12 text-center font-data-mono text-headline-sm border border-outline-variant rounded bg-surface-container-lowest text-on-surface focus:outline-none focus:ring-2 focus:ring-tertiary-container focus:border-transparent transition-all" id="otp-5" maxLength="1" type="text"/>
-<input aria-label="Digit 6" className="w-full h-12 text-center font-data-mono text-headline-sm border border-outline-variant rounded bg-surface-container-lowest text-on-surface focus:outline-none focus:ring-2 focus:ring-tertiary-container focus:border-transparent transition-all" id="otp-6" maxLength="1" type="text"/>
+{digits.map((digit, index) => (
+<input aria-label={`Digit ${index + 1}`} className="w-full h-12 text-center font-data-mono text-headline-sm border border-outline-variant rounded bg-surface-container-lowest text-on-surface focus:outline-none focus:ring-2 focus:ring-tertiary-container focus:border-transparent transition-all" id={`otp-${index + 1}`} key={index} maxLength="1" onChange={(event) => updateDigit(index, event.target.value)} type="text" value={digit}/>
+))}
 </div>
 </div>
+{error && <p className="font-body-sm text-body-sm text-error bg-error-container/30 border border-error/30 rounded px-sm py-xs">{error}</p>}
 {/* Timer & Resend */}
 <div className="flex justify-between items-center font-body-sm text-body-sm">
 <span className="text-on-surface-variant flex items-center gap-base">
@@ -52,9 +79,9 @@ const TwoFaSecurityVerification = () => {
                     </label>
 </div>
 {/* Action Button */}
-<button className="mt-sm w-full bg-primary-container text-on-primary hover:bg-on-primary-fixed-variant transition-colors py-3 rounded flex items-center justify-center gap-2 font-label-md text-label-md font-bold focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface focus:ring-tertiary-container" type="submit">
+<button className="mt-sm w-full bg-primary-container text-on-primary hover:bg-on-primary-fixed-variant transition-colors py-3 rounded flex items-center justify-center gap-2 font-label-md text-label-md font-bold focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface focus:ring-tertiary-container disabled:opacity-60" disabled={submitting} type="submit">
 <span className="material-symbols-outlined text-[20px]">verified_user</span>
-                    Verify Identity
+                    {submitting ? 'Verifying...' : 'Verify Identity'}
                 </button>
 </form>
 {/* Footer Links */}

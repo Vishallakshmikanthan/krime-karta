@@ -1,8 +1,30 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { login } from '../lib/api';
 
 const OfficialLogin = () => {
   const navigate = useNavigate();
+  const [serviceId, setServiceId] = useState('KA-P-12345');
+  const [password, setPassword] = useState('password');
+  const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setError('');
+    setSubmitting(true);
+    try {
+      const response = await login(serviceId, password);
+      localStorage.setItem('krimekarta.pendingServiceId', serviceId);
+      localStorage.setItem('krimekarta.pendingMfaToken', response.mfaToken);
+      navigate('/two-fa');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <>
       <div className="bg-surface min-h-screen flex items-center justify-center font-body-md text-on-surface">
@@ -14,23 +36,24 @@ const OfficialLogin = () => {
 <p className="font-body-sm text-body-sm text-primary-fixed-dim text-center">Law Enforcement Intel</p>
 </div>
 <div className="p-lg">
-<form className="space-y-md" onSubmit={(e) => { e.preventDefault(); navigate('/two-fa'); }}>
+<form className="space-y-md" onSubmit={handleSubmit}>
 <div className="space-y-base">
 <label className="block font-label-md text-label-md text-on-surface" htmlFor="service-id">Service ID</label>
-<input className="w-full bg-surface-container-lowest border border-outline-variant rounded px-sm py-xs font-data-mono text-data-mono text-on-surface focus:outline-none focus:ring-2 focus:ring-tertiary-fixed-dim focus:border-transparent transition-shadow" id="service-id" name="service-id" placeholder="e.g. KA-P-12345" required="" type="text"/>
+<input className="w-full bg-surface-container-lowest border border-outline-variant rounded px-sm py-xs font-data-mono text-data-mono text-on-surface focus:outline-none focus:ring-2 focus:ring-tertiary-fixed-dim focus:border-transparent transition-shadow" id="service-id" name="service-id" onChange={(event) => setServiceId(event.target.value)} placeholder="e.g. KA-P-12345" required="" type="text" value={serviceId}/>
 </div>
 <div className="space-y-base">
 <label className="block font-label-md text-label-md text-on-surface" htmlFor="password">Password</label>
-<input className="w-full bg-surface-container-lowest border border-outline-variant rounded px-sm py-xs font-body-md text-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-tertiary-fixed-dim focus:border-transparent transition-shadow" id="password" name="password" required="" type="password"/>
+<input className="w-full bg-surface-container-lowest border border-outline-variant rounded px-sm py-xs font-body-md text-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-tertiary-fixed-dim focus:border-transparent transition-shadow" id="password" name="password" onChange={(event) => setPassword(event.target.value)} required="" type="password" value={password}/>
 </div>
 <div className="pt-sm border-t border-outline-variant space-y-md">
+{error && <p className="font-body-sm text-body-sm text-error bg-error-container/30 border border-error/30 rounded px-sm py-xs">{error}</p>}
 <div className="flex items-center gap-sm bg-surface-container-low p-sm rounded border border-outline-variant">
 <span className="material-symbols-outlined text-primary text-xl">gpp_good</span>
 <p className="font-body-sm text-body-sm text-on-surface-variant flex-1">Two-Factor Authentication is required for all official access.</p>
 </div>
-<button className="w-full bg-primary-container text-on-primary font-label-md text-label-md py-sm rounded hover:bg-primary transition-colors flex items-center justify-center gap-xs" type="submit">
+<button className="w-full bg-primary-container text-on-primary font-label-md text-label-md py-sm rounded hover:bg-primary transition-colors flex items-center justify-center gap-xs disabled:opacity-60" disabled={submitting} type="submit">
 <span className="material-symbols-outlined text-sm">login</span>
-                            Secure Login
+                            {submitting ? 'Authenticating...' : 'Secure Login'}
                         </button>
 </div>
 </form>

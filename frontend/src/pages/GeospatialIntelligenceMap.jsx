@@ -1,7 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useApiResource } from '../hooks/useApiResource';
 
 const GeospatialIntelligenceMap = () => {
+  const { data } = useApiResource('/gis/overview', geoFallback);
+  const activeHotspot = data.hotspots[0] || geoFallback.hotspots[0];
+  const alerts = data.alerts.length ? data.alerts : geoFallback.alerts;
+
   return (
     <>
       <div className="bg-background text-on-background font-body-md h-full overflow-hidden flex">
@@ -158,19 +163,19 @@ const GeospatialIntelligenceMap = () => {
 <span className="bg-error text-on-error px-2 py-0.5 rounded text-[10px] font-bold">CRITICAL</span>
 </div>
 <div className="p-4 bg-surface">
-<h4 className="font-headline-sm text-headline-sm text-on-surface mb-1">Sector 4 - Commercial Dist.</h4>
-<p className="font-body-sm text-body-sm text-on-surface-variant mb-4">Elevated activity detected in the last 12 hours. Primarily property-related incidents.</p>
+<h4 className="font-headline-sm text-headline-sm text-on-surface mb-1">{activeHotspot.name}</h4>
+<p className="font-body-sm text-body-sm text-on-surface-variant mb-4">{activeHotspot.recommendation}. Confidence {activeHotspot.confidence}%.</p>
 <div className="grid grid-cols-2 gap-4 mb-4">
 <div className="bg-surface-container-low p-3 rounded border border-outline-variant">
 <div className="font-label-md text-label-md text-on-surface-variant mb-1">Risk Score</div>
 <div className="font-headline-md text-headline-md text-error flex items-baseline gap-1">
-                                    84 <span className="font-body-sm text-body-sm text-on-surface-variant">/100</span>
+                                    {activeHotspot.riskScore} <span className="font-body-sm text-body-sm text-on-surface-variant">/100</span>
 </div>
 </div>
 <div className="bg-surface-container-low p-3 rounded border border-outline-variant">
 <div className="font-label-md text-label-md text-on-surface-variant mb-1">Incidents (24h)</div>
 <div className="font-headline-md text-headline-md text-on-surface">
-                                    12
+                                    {activeHotspot.incidents24h}
                                 </div>
 </div>
 </div>
@@ -185,22 +190,16 @@ const GeospatialIntelligenceMap = () => {
 <h3 className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Live Intel Feed</h3>
 </div>
 <ul className="divide-y divide-outline-variant">
-<li className="p-3 hover:bg-surface-container-low transition-colors cursor-pointer flex gap-3">
+{alerts.slice(0, 3).map((alert) => (
+<li className="p-3 hover:bg-surface-container-low transition-colors cursor-pointer flex gap-3" key={alert.id}>
 <div className="mt-1"><span className="material-symbols-outlined text-error text-[18px]">local_police</span></div>
 <div>
-<div className="font-data-mono text-data-mono text-on-surface">INC-8892</div>
-<div className="font-body-sm text-body-sm text-on-surface-variant">Suspicious activity reported near Central Bank branch.</div>
-<div className="font-label-md text-[10px] text-tertiary mt-1">2 MINS AGO</div>
+<div className="font-data-mono text-data-mono text-on-surface">{alert.code}</div>
+<div className="font-body-sm text-body-sm text-on-surface-variant">{alert.title}</div>
+<div className="font-label-md text-[10px] text-tertiary mt-1">{alert.age}</div>
 </div>
 </li>
-<li className="p-3 hover:bg-surface-container-low transition-colors cursor-pointer flex gap-3">
-<div className="mt-1"><span className="material-symbols-outlined text-tertiary-fixed-dim text-[18px]">directions_car</span></div>
-<div>
-<div className="font-data-mono text-data-mono text-on-surface">TRF-4011</div>
-<div className="font-body-sm text-body-sm text-on-surface-variant">Vehicle matching BOLO description flagged on ANPR camera 42.</div>
-<div className="font-label-md text-[10px] text-tertiary mt-1">15 MINS AGO</div>
-</div>
-</li>
+))}
 </ul>
 </div>
 </div>
@@ -258,3 +257,8 @@ const GeospatialIntelligenceMap = () => {
 };
 
 export default GeospatialIntelligenceMap;
+
+const geoFallback = {
+  hotspots: [{ id: 'hotspot-local', name: 'Sector 4 - Commercial Dist.', riskScore: 84, confidence: 82, incidents24h: 12, recommendation: 'Deploy patrol unit' }],
+  alerts: [{ id: 'alert-local', code: 'INC-8892', title: 'Suspicious activity reported near Central Bank branch.', age: '2 MINS AGO' }]
+};

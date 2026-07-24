@@ -1,7 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useApiResource } from '../hooks/useApiResource';
 
 const StrategicAnalytics = () => {
+  const { data } = useApiResource('/analytics/summary', analyticsFallback);
+  const topCategories = data.byCategory.length ? data.byCategory : analyticsFallback.byCategory;
+  const summary = data.executiveSummary;
+
   return (
     <>
       <div className="bg-background text-on-background font-body-md h-screen overflow-hidden flex selection:bg-primary selection:text-on-primary">
@@ -171,26 +176,26 @@ const StrategicAnalytics = () => {
 <div className="flex gap-1 h-3/5">
 <div className="bg-secondary-container text-on-secondary-container w-2/3 p-2 rounded-sm flex flex-col justify-between border border-outline-variant/30 hover:opacity-90 cursor-default">
 <span className="font-label-md text-label-md">Property Crime</span>
-<span className="font-data-mono text-data-mono font-bold text-lg">42%</span>
+<span className="font-data-mono text-data-mono font-bold text-lg">{topCategories[0]?.pct || 42}%</span>
 </div>
 <div className="bg-surface-variant text-on-surface-variant w-1/3 p-2 rounded-sm flex flex-col justify-between border border-outline-variant/30 hover:opacity-90 cursor-default">
 <span className="font-label-md text-label-md">Cyber</span>
-<span className="font-data-mono text-data-mono font-bold text-lg">21%</span>
+<span className="font-data-mono text-data-mono font-bold text-lg">{topCategories[1]?.pct || 21}%</span>
 </div>
 </div>
 <div className="flex gap-1 h-2/5">
 <div className="bg-tertiary-container text-on-tertiary-container w-1/2 p-2 rounded-sm flex flex-col justify-between border border-outline-variant/30 hover:opacity-90 cursor-default">
 <span className="font-label-md text-label-md">Violent</span>
-<span className="font-data-mono text-data-mono font-bold">18%</span>
+<span className="font-data-mono text-data-mono font-bold">{topCategories[2]?.pct || 18}%</span>
 </div>
 <div className="flex gap-1 w-1/2">
 <div className="bg-surface-container-high text-on-surface-variant w-3/5 p-2 rounded-sm flex flex-col justify-between border border-outline-variant/30 hover:opacity-90 cursor-default">
 <span className="font-label-md text-[10px] uppercase tracking-wider">Narcotics</span>
-<span className="font-data-mono text-data-mono font-bold">11%</span>
+<span className="font-data-mono text-data-mono font-bold">{topCategories[3]?.pct || 11}%</span>
 </div>
 <div className="bg-surface text-on-surface w-2/5 p-2 rounded-sm flex flex-col justify-between border border-outline-variant/30 hover:opacity-90 cursor-default">
 <span className="font-label-md text-[10px] uppercase tracking-wider">Other</span>
-<span className="font-data-mono text-data-mono font-bold">8%</span>
+<span className="font-data-mono text-data-mono font-bold">{topCategories[4]?.pct || 8}%</span>
 </div>
 </div>
 </div>
@@ -207,33 +212,33 @@ const StrategicAnalytics = () => {
 </div>
 <div className="p-md flex flex-col gap-md overflow-y-auto">
 <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
-                                Analysis of Q3 data indicates a statistically significant deviation from historical baselines, primarily driven by two key anomalies in the central districts.
+                                {summary.headline}
                             </p>
 {/* Insight Item */}
 <div className="border-l-2 border-primary pl-3 py-1">
 <h4 className="font-label-md text-label-md text-on-surface flex items-center gap-2 mb-1">
 <span className="material-symbols-outlined text-[16px] text-primary">trending_up</span>
-                                    Spike in Cyber Fraud
+                                    {summary.insights[0]?.title || 'Spike in Cyber Fraud'}
                                 </h4>
 <p className="font-body-sm text-body-sm text-on-surface-variant">
-                                    A 42% increase in reported phishing incidents concentrated in the IT corridors (Whitefield, Electronics City). Timing correlates with recent tax filing deadlines.
+                                    {summary.insights[0]?.body}
                                 </p>
 </div>
 {/* Insight Item */}
 <div className="border-l-2 border-tertiary-fixed-dim pl-3 py-1">
 <h4 className="font-label-md text-label-md text-on-surface flex items-center gap-2 mb-1">
 <span className="material-symbols-outlined text-[16px] text-tertiary">location_searching</span>
-                                    Property Crime Shift
+                                    {summary.insights[1]?.title || 'Property Crime Shift'}
                                 </h4>
 <p className="font-body-sm text-body-sm text-on-surface-variant">
-                                    Vehicle thefts have migrated from urban centers to peripheral residential zones. Peak incident times remain consistent between 01:00 and 04:00 hours.
+                                    {summary.insights[1]?.body}
                                 </p>
 </div>
 {/* Actionable Recommendation */}
 <div className="bg-surface-container p-3 rounded border border-outline-variant/50 mt-2">
 <h4 className="font-label-md text-label-md text-on-surface mb-2 border-b border-outline-variant/50 pb-1">Recommended Deployment</h4>
 <p className="font-body-sm text-body-sm text-on-surface-variant mb-3">
-                                    Increase nocturnal visible patrols in Sector 4 &amp; 7. Initiate public awareness campaign regarding digital tax fraud.
+                                    {summary.recommendation}
                                 </p>
 <button className="w-full py-1.5 px-3 bg-surface-container-highest border border-outline-variant text-on-surface font-label-md text-label-md rounded hover:bg-surface-dim transition-colors text-center">
                                     Generate Full Briefing
@@ -263,3 +268,21 @@ const StrategicAnalytics = () => {
 };
 
 export default StrategicAnalytics;
+
+const analyticsFallback = {
+  byCategory: [
+    { category: 'Property Crime', pct: 42 },
+    { category: 'Cyber', pct: 21 },
+    { category: 'Violent', pct: 18 },
+    { category: 'Narcotics', pct: 11 },
+    { category: 'Other', pct: 8 }
+  ],
+  executiveSummary: {
+    headline: 'Analysis indicates deviations from historical baselines in the central districts.',
+    insights: [
+      { title: 'Spike in Cyber Fraud', body: 'Reported phishing incidents are concentrated in IT corridors.' },
+      { title: 'Property Crime Shift', body: 'Vehicle thefts have migrated from urban centers to transit hubs.' }
+    ],
+    recommendation: 'Increase nocturnal visible patrols and launch digital fraud awareness.'
+  }
+};

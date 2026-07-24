@@ -1,7 +1,34 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { api } from '../lib/api';
+import { useApiResource } from '../hooks/useApiResource';
 
 const AiPatrolRecommendationCenter = () => {
+  const { data, setData } = useApiResource('/ai/patrol/recommendations', patrolFallback);
+  const [fieldNote, setFieldNote] = useState('');
+  const recommendations = data.items.length ? data.items : patrolFallback.items;
+  const primary = recommendations[0];
+  const secondary = recommendations[1] || recommendations[0];
+
+  const decide = async (id, decision) => {
+    const updated = await api(`/ai/patrol/recommendations/${id}/${decision}`, { method: 'POST' });
+    setData((current) => ({
+      ...current,
+      items: current.items.map((item) => (item.id === updated.id ? updated : item))
+    }));
+  };
+
+  const submitFeedback = async (event) => {
+    event.preventDefault();
+    if (!fieldNote.trim()) return;
+    const feedback = await api('/ai/patrol/feedback', {
+      method: 'POST',
+      body: JSON.stringify({ officer: 'Field Officer', note: fieldNote })
+    });
+    setData((current) => ({ ...current, feedback: [feedback, ...(current.feedback || [])] }));
+    setFieldNote('');
+  };
+
   return (
     <>
       <div className="bg-surface text-on-surface font-body-md min-h-screen flex">
@@ -88,7 +115,7 @@ const AiPatrolRecommendationCenter = () => {
 </div>
 <div className="mt-4 md:mt-0 flex items-center gap-2 bg-surface-container px-3 py-1.5 rounded-lg border border-outline-variant">
 <span className="material-symbols-outlined text-[18px] text-tertiary-fixed-dim">schedule</span>
-<span className="font-data-mono text-data-mono text-on-surface-variant">Last Update: Just now</span>
+<span className="font-data-mono text-data-mono text-on-surface-variant">Last Update: Live API</span>
 </div>
 </div>
 <div className="space-y-sm">
@@ -100,23 +127,23 @@ const AiPatrolRecommendationCenter = () => {
 <div className="flex items-start justify-between">
 <div>
 <div className="flex items-center gap-2 mb-1">
-<span className="bg-error-container text-on-error-container px-2 py-0.5 rounded font-label-md text-label-md uppercase tracking-wider">High Priority</span>
-<span className="font-data-mono text-data-mono text-on-surface-variant">ID: REC-2023-8891</span>
+<span className="bg-error-container text-on-error-container px-2 py-0.5 rounded font-label-md text-label-md uppercase tracking-wider">{primary.priority} Priority</span>
+<span className="font-data-mono text-data-mono text-on-surface-variant">ID: {primary.id.toUpperCase()}</span>
 </div>
-<h3 className="font-headline-sm text-headline-sm text-on-surface">Deploy 2 Mobile Units</h3>
+<h3 className="font-headline-sm text-headline-sm text-on-surface">{primary.action}</h3>
 <p className="font-body-sm text-body-sm text-on-surface-variant mt-1 flex items-center gap-1">
 <span className="material-symbols-outlined text-[16px]">location_on</span>
-                                            Sector 4, Near Majestic Transport Hub
+                                            {primary.location}
                                         </p>
 </div>
 <div className="text-right">
-<div className="font-display text-display text-error">94</div>
+<div className="font-display text-display text-error">{primary.riskScore}</div>
 <div className="font-label-md text-label-md text-on-surface-variant uppercase">Risk Score</div>
 </div>
 </div>
 <div className="bg-surface p-sm rounded border border-outline-variant">
 <h4 className="font-label-md text-label-md text-on-surface-variant mb-2 uppercase tracking-wider">AI Reasoning</h4>
-<p className="font-body-md text-body-md text-on-surface">Spike in reported petty theft incidents over the last 4 hours correlating with historical patterns during major festive transit periods. Confidence level is exceptionally high due to cross-referenced CCTV density and recent tip-offs.</p>
+<p className="font-body-md text-body-md text-on-surface">{primary.reasoning}</p>
 </div>
 </div>
 <div className="lg:w-64 flex flex-col justify-between border-t lg:border-t-0 lg:border-l border-outline-variant pt-md lg:pt-0 lg:pl-md">
@@ -124,22 +151,22 @@ const AiPatrolRecommendationCenter = () => {
 <div>
 <div className="flex justify-between font-label-md text-label-md mb-1">
 <span className="text-on-surface-variant">Confidence Level</span>
-<span className="text-on-surface">88%</span>
+<span className="text-on-surface">{primary.confidence}%</span>
 </div>
 <div className="h-1.5 w-full bg-surface-variant rounded-full overflow-hidden">
-<div className="h-full bg-primary" style={{width: "88%"}}></div>
+<div className="h-full bg-primary" style={{width: `${primary.confidence}%`}}></div>
 </div>
 </div>
 <div className="flex items-center gap-2 text-sm font-data-mono text-on-surface-variant">
 <span className="material-symbols-outlined text-[16px]">group</span>
-                                        Req: 4 Officers
+                                        Req: {primary.requiredOfficers} Officers
                                     </div>
 </div>
 <div className="flex gap-2 mt-sm lg:mt-0">
-<button className="flex-1 bg-primary hover:bg-primary-container text-on-primary py-2 px-3 rounded font-label-md text-label-md transition-colors flex justify-center items-center gap-1">
-<span className="material-symbols-outlined text-[18px]">check</span> Approve
+<button className="flex-1 bg-primary hover:bg-primary-container text-on-primary py-2 px-3 rounded font-label-md text-label-md transition-colors flex justify-center items-center gap-1 disabled:opacity-60" disabled={primary.status !== 'pending'} onClick={() => decide(primary.id, 'approve')}>
+<span className="material-symbols-outlined text-[18px]">check</span> {primary.status === 'pending' ? 'Approve' : primary.status}
                                     </button>
-<button className="bg-surface border border-outline-variant hover:bg-surface-container-low text-on-surface py-2 px-3 rounded font-label-md text-label-md transition-colors">
+<button className="bg-surface border border-outline-variant hover:bg-surface-container-low text-on-surface py-2 px-3 rounded font-label-md text-label-md transition-colors" onClick={() => decide(primary.id, 'reject')}>
                                         Reject
                                     </button>
 <button className="text-on-surface-variant hover:text-primary transition-colors p-2">
@@ -157,23 +184,23 @@ const AiPatrolRecommendationCenter = () => {
 <div className="flex items-start justify-between">
 <div>
 <div className="flex items-center gap-2 mb-1">
-<span className="bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded font-label-md text-label-md uppercase tracking-wider">Medium Priority</span>
-<span className="font-data-mono text-data-mono text-on-surface-variant">ID: REC-2023-8892</span>
+<span className="bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded font-label-md text-label-md uppercase tracking-wider">{secondary.priority} Priority</span>
+<span className="font-data-mono text-data-mono text-on-surface-variant">ID: {secondary.id.toUpperCase()}</span>
 </div>
-<h3 className="font-headline-sm text-headline-sm text-on-surface">Increase Foot Patrol</h3>
+<h3 className="font-headline-sm text-headline-sm text-on-surface">{secondary.action}</h3>
 <p className="font-body-sm text-body-sm text-on-surface-variant mt-1 flex items-center gap-1">
 <span className="material-symbols-outlined text-[16px]">location_on</span>
-                                            Commercial Street Market Area
+                                            {secondary.location}
                                         </p>
 </div>
 <div className="text-right">
-<div className="font-display text-display text-on-surface">62</div>
+<div className="font-display text-display text-on-surface">{secondary.riskScore}</div>
 <div className="font-label-md text-label-md text-on-surface-variant uppercase">Risk Score</div>
 </div>
 </div>
 <div className="bg-surface p-sm rounded border border-outline-variant">
 <h4 className="font-label-md text-label-md text-on-surface-variant mb-2 uppercase tracking-wider">AI Reasoning</h4>
-<p className="font-body-md text-body-md text-on-surface">Anticipated crowd density increase based on weather patterns (clear skies after rain) and end-of-month salary disbursements. Historical data suggests a moderate increase in nuisance reports under these conditions.</p>
+<p className="font-body-md text-body-md text-on-surface">{secondary.reasoning}</p>
 </div>
 </div>
 <div className="lg:w-64 flex flex-col justify-between border-t lg:border-t-0 lg:border-l border-outline-variant pt-md lg:pt-0 lg:pl-md">
@@ -181,22 +208,22 @@ const AiPatrolRecommendationCenter = () => {
 <div>
 <div className="flex justify-between font-label-md text-label-md mb-1">
 <span className="text-on-surface-variant">Confidence Level</span>
-<span className="text-on-surface">74%</span>
+<span className="text-on-surface">{secondary.confidence}%</span>
 </div>
 <div className="h-1.5 w-full bg-surface-variant rounded-full overflow-hidden">
-<div className="h-full bg-tertiary-fixed-dim" style={{width: "74%"}}></div>
+<div className="h-full bg-tertiary-fixed-dim" style={{width: `${secondary.confidence}%`}}></div>
 </div>
 </div>
 <div className="flex items-center gap-2 text-sm font-data-mono text-on-surface-variant">
 <span className="material-symbols-outlined text-[16px]">group</span>
-                                        Req: 2 Officers
+                                        Req: {secondary.requiredOfficers} Officers
                                     </div>
 </div>
 <div className="flex gap-2 mt-sm lg:mt-0">
-<button className="flex-1 bg-surface border border-primary text-primary hover:bg-surface-container-low py-2 px-3 rounded font-label-md text-label-md transition-colors flex justify-center items-center gap-1">
-<span className="material-symbols-outlined text-[18px]">check</span> Approve
+<button className="flex-1 bg-surface border border-primary text-primary hover:bg-surface-container-low py-2 px-3 rounded font-label-md text-label-md transition-colors flex justify-center items-center gap-1 disabled:opacity-60" disabled={secondary.status !== 'pending'} onClick={() => decide(secondary.id, 'approve')}>
+<span className="material-symbols-outlined text-[18px]">check</span> {secondary.status === 'pending' ? 'Approve' : secondary.status}
                                     </button>
-<button className="bg-surface border border-outline-variant hover:bg-surface-container-low text-on-surface py-2 px-3 rounded font-label-md text-label-md transition-colors">
+<button className="bg-surface border border-outline-variant hover:bg-surface-container-low text-on-surface py-2 px-3 rounded font-label-md text-label-md transition-colors" onClick={() => decide(secondary.id, 'reject')}>
                                         Reject
                                     </button>
 <button className="text-on-surface-variant hover:text-primary transition-colors p-2">
@@ -242,24 +269,19 @@ const AiPatrolRecommendationCenter = () => {
                         Field Feedback
                     </h3>
 <div className="space-y-3 overflow-y-auto max-h-64 pr-2">
-<div className="text-sm">
+{(data.feedback || []).slice(0, 4).map((feedback) => (
+<div className="text-sm" key={feedback.id}>
 <div className="flex items-center gap-2 mb-1">
-<span className="font-label-md text-label-md text-on-surface">Sgt. Ramesh K.</span>
-<span className="text-xs text-on-surface-variant font-data-mono">10:42 AM</span>
+<span className="font-label-md text-label-md text-on-surface">{feedback.officer}</span>
+<span className="text-xs text-on-surface-variant font-data-mono">{new Date(feedback.createdAt).toLocaleString()}</span>
 </div>
-<p className="font-body-sm text-body-sm text-on-surface-variant bg-surface p-2 rounded border border-outline-variant">"AI recommendation for Sector 4 was spot on. Intercepted two individuals matching the historical profile."</p>
+<p className="font-body-sm text-body-sm text-on-surface-variant bg-surface p-2 rounded border border-outline-variant">"{feedback.note}"</p>
 </div>
-<div className="text-sm">
-<div className="flex items-center gap-2 mb-1">
-<span className="font-label-md text-label-md text-on-surface">Insp. Patil</span>
-<span className="text-xs text-on-surface-variant font-data-mono">Yesterday</span>
+))}
 </div>
-<p className="font-body-sm text-body-sm text-on-surface-variant bg-surface p-2 rounded border border-outline-variant">"Commercial St. prediction was slightly early, crowds peaked an hour later than anticipated. Adjusting feedback loop."</p>
-</div>
-</div>
-<div className="mt-sm pt-sm border-t border-outline-variant">
-<input className="w-full bg-surface border border-outline-variant rounded p-2 text-sm font-body-sm focus:ring-2 focus:ring-secondary-fixed focus:border-secondary-fixed outline-none" placeholder="Add field observation..." type="text"/>
-</div>
+<form className="mt-sm pt-sm border-t border-outline-variant" onSubmit={submitFeedback}>
+<input className="w-full bg-surface border border-outline-variant rounded p-2 text-sm font-body-sm focus:ring-2 focus:ring-secondary-fixed focus:border-secondary-fixed outline-none" onChange={(event) => setFieldNote(event.target.value)} placeholder="Add field observation..." type="text" value={fieldNote}/>
+</form>
 </div>
 </aside>
 </div>
@@ -279,3 +301,31 @@ const AiPatrolRecommendationCenter = () => {
 };
 
 export default AiPatrolRecommendationCenter;
+
+const patrolFallback = {
+  items: [
+    {
+      id: 'rec-local-1',
+      priority: 'High',
+      action: 'Deploy 2 Mobile Units',
+      location: 'Sector 4, Near Majestic Transport Hub',
+      riskScore: 94,
+      confidence: 88,
+      requiredOfficers: 4,
+      status: 'pending',
+      reasoning: 'Spike in reported petty theft incidents over the last 4 hours correlating with historical patterns.'
+    },
+    {
+      id: 'rec-local-2',
+      priority: 'Medium',
+      action: 'Increase Foot Patrol',
+      location: 'Commercial Street Market Area',
+      riskScore: 62,
+      confidence: 74,
+      requiredOfficers: 2,
+      status: 'pending',
+      reasoning: 'Crowd density is expected to increase after clear weather and salary disbursement windows.'
+    }
+  ],
+  feedback: []
+};
