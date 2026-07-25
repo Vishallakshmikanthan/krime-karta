@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import Sidebar from '../components/layout/Sidebar';
 import Header from '../components/layout/Header';
 import GeospatialMap from '../components/maps/GeospatialMap';
+import ErrorBoundary from '../components/layout/ErrorBoundary';
 import { fetchHotspots, fetchBriefing } from '../services/apiClient';
 
 export default function DashboardOverview() {
@@ -103,7 +104,9 @@ export default function DashboardOverview() {
                 </Link>
               </div>
               <div className="flex-1 w-full relative rounded-lg overflow-hidden border border-outline-variant z-10">
-                <GeospatialMap hotspots={hotspots} _district="Bengaluru Central" />
+                <ErrorBoundary>
+                  <GeospatialMap hotspots={hotspots} _district="Bengaluru Central" />
+                </ErrorBoundary>
               </div>
             </div>
 

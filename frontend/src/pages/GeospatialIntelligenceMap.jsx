@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/layout/Sidebar';
 import Header from '../components/layout/Header';
 import GeospatialMap from '../components/maps/GeospatialMap';
+import ErrorBoundary from '../components/layout/ErrorBoundary';
 import { fetchHotspots } from '../services/apiClient';
 
 export default function GeospatialIntelligenceMap() {
@@ -46,7 +47,9 @@ export default function GeospatialIntelligenceMap() {
 
           {/* Map Area */}
           <div className="flex-1 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm relative overflow-hidden h-[calc(100vh-180px)]">
-            <GeospatialMap hotspots={hotspots} onSelectCell={setSelectedCell} />
+            <ErrorBoundary>
+              <GeospatialMap hotspots={hotspots} onSelectCell={setSelectedCell} />
+            </ErrorBoundary>
           </div>
 
           {/* Side Panel for Selected Hotspot */}
