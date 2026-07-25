@@ -1,296 +1,165 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useApiResource } from '../hooks/useApiResource';
+import Sidebar from '../components/layout/Sidebar';
+import Header from '../components/layout/Header';
+import GeospatialMap from '../components/maps/GeospatialMap';
+import { fetchHotspots, fetchBriefing } from '../services/apiClient';
 
-const DashboardOverview = () => {
-  const { data } = useApiResource('/dashboard/overview', dashboardFallback);
-  const kpis = data.kpis;
-  const trendPoints = data.trends.map((item, index) => {
-    const x = index * (800 / Math.max(data.trends.length - 1, 1));
-    const y = 275 - (item.count / 160) * 220;
-    return { ...item, x, y };
-  });
-  const trendPath = trendPoints.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`).join(' ');
+export default function DashboardOverview() {
+  const [hotspots, setHotspots] = useState([]);
+  const [briefing, setBriefing] = useState(null);
+
+  useEffect(() => {
+    fetchHotspots('Bengaluru Central', 48).then((res) => {
+      if (res && res.predictions) setHotspots(res.predictions);
+    });
+    fetchBriefing('Bengaluru Central').then((res) => {
+      if (res) setBriefing(res);
+    });
+  }, []);
+
+  const kpis = {
+    totalCrimes24h: 342,
+    crimeChangePct: 14.2,
+    aiRiskLevel: 'ELEVATED',
+    activePatrols: 24,
+    patrolCapacity: 30,
+    resolvedCases: 289,
+    resolvedChangePct: 8.5
+  };
+
+  const trendDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const trendValues = [42, 38, 55, 48, 62, 75, 68];
 
   return (
-    <>
-      <div className="bg-background text-on-surface flex flex-col md:flex-row min-h-screen">
-{/* Side Navigation (Desktop) */}
-<aside className="hidden md:flex flex-col w-[280px] h-screen sticky top-0 bg-surface border-r border-outline-variant py-md flex-shrink-0 z-40">
-<div className="px-md mb-8 flex items-center gap-3">
-<img className="w-10 h-10 object-contain rounded-full border border-outline-variant bg-white" data-alt="Official Karnataka Police Emblem, high-contrast, professional, detailed insignia, authoritative law enforcement theme, clean background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBwUpqwGJHTAQCzZSn4_zbm8BdsvQnim8bkJiNhLLkszJb9oEM2mITmiiD82Yb0lSB8dwmK5MZ0GAKIBWdfJOB3zvXWKxva_7S3q4DJv837mFUS76bk8dpIUaGfje_aBumr4ug6M4BAYkHYrtNCYZM2lb1ooh4bPDpVgeqXFnGEMcaAui0BYEDyz_qMkADfWHMQdSvKTanKW7gZ9sO266_Q8ot-t8vFM8b-AMpyZsYWRBUh_AVgDH_99Q"/>
-<div>
-<h1 className="font-headline-md text-headline-md font-bold text-primary">KrimeKartā</h1>
-<p className="font-label-md text-label-md text-on-surface-variant">Law Enforcement Intel</p>
-</div>
-</div>
-<nav className="flex-1 flex flex-col gap-1">
-<Link className="flex items-center gap-3 px-4 py-3 bg-primary text-on-primary rounded-lg mx-2 scale-[0.98] transition-transform duration-150" to="/dashboard">
-<span className="material-symbols-outlined fill text-[20px]">dashboard</span>
-<span className="font-label-md text-label-md">Dashboard</span>
-</Link>
-<Link className="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors mx-2 rounded-lg" to="/geospatial-map">
-<span className="material-symbols-outlined text-[20px]">map</span>
-<span className="font-label-md text-label-md">Crime Map</span>
-</Link>
-<Link className="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors mx-2 rounded-lg" to="/strategic-analytics">
-<span className="material-symbols-outlined text-[20px]">query_stats</span>
-<span className="font-label-md text-label-md">Analytics</span>
-</Link>
-<Link className="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors mx-2 rounded-lg" to="/ai-patrol">
-<span className="material-symbols-outlined text-[20px]">auto_awesome</span>
-<span className="font-label-md text-label-md">AI Patrol</span>
-</Link>
-<Link className="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors mx-2 rounded-lg" to="/advanced-network">
-<span className="material-symbols-outlined text-[20px]">hub</span>
-<span className="font-label-md text-label-md">Network Analysis</span>
-</Link>
-<Link className="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors mx-2 rounded-lg" to="/national-crime-records">
-<span className="material-symbols-outlined text-[20px]">description</span>
-<span className="font-label-md text-label-md">Records</span>
-</Link>
-<Link className="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors mx-2 rounded-lg" to="/criminal-intelligence">
-<span className="material-symbols-outlined text-[20px]">summarize</span>
-<span className="font-label-md text-label-md">Reports</span>
-</Link>
-</nav>
-<div className="px-md mt-auto flex flex-col gap-3">
-<button className="w-full bg-primary-container text-on-primary-container py-2 rounded-lg font-label-md text-label-md flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
-<span className="material-symbols-outlined text-[18px]">emergency</span>
-                Emergency Dispatch
-            </button>
-<div className="h-px bg-outline-variant w-full my-2"></div>
-<Link className="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-lg" to="/command-center">
-<span className="material-symbols-outlined text-[20px]">verified_user</span>
-<span className="font-label-md text-label-md">System Status</span>
-</Link>
-<a className="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-lg" href="#">
-<span className="material-symbols-outlined text-[20px]">settings</span>
-<span className="font-label-md text-label-md">Settings</span>
-</a>
-</div>
-</aside>
-{/* Main Content Area */}
-<main className="flex-1 flex flex-col min-w-0 bg-surface-container-lowest">
-{/* Top App Bar (Mobile Nav / Desktop Header) */}
-<header className="flex justify-between items-center w-full h-16 px-md sticky top-0 z-30 bg-surface border-b border-outline-variant">
-{/* Mobile Menu Toggle & Brand */}
-<div className="flex items-center gap-4 md:hidden">
-<button className="text-on-surface-variant hover:bg-surface-container-low p-2 rounded-full transition-colors">
-<span className="material-symbols-outlined">menu</span>
-</button>
-<span className="font-headline-sm text-headline-sm font-bold text-primary">KrimeKartā</span>
-</div>
-<div className="hidden md:flex items-center gap-2">
-<span className="font-headline-sm text-headline-sm text-on-surface font-bold tracking-tight">Command Center</span>
-</div>
-{/* Actions */}
-<div className="flex items-center gap-2">
-<button className="text-on-surface-variant hover:bg-surface-container-low p-2 rounded-full transition-colors relative">
-<span className="material-symbols-outlined">notifications</span>
-<span className="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
-</button>
-<button className="text-on-surface-variant hover:bg-surface-container-low p-2 rounded-full transition-colors">
-<span className="material-symbols-outlined">account_circle</span>
-</button>
-</div>
-</header>
-<div className="p-md lg:p-xl flex-1 max-w-container-max mx-auto w-full space-y-lg">
-{/* KPI Row */}
-<section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-md">
-<div className="bg-surface-container-lowest border border-outline-variant rounded p-sm flex flex-col justify-between">
-<div className="flex items-start justify-between mb-2">
-<span className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Total Crimes (24h)</span>
-<span className="material-symbols-outlined text-secondary text-[20px]">gavel</span>
-</div>
-<div className="flex items-end gap-2">
-<span className="font-data-mono text-[32px] leading-tight font-bold text-on-surface">{kpis.totalCrimes24h}</span>
-<span className="font-label-md text-label-md text-primary flex items-center mb-1">
-<span className="material-symbols-outlined text-[14px]">arrow_upward</span> {kpis.crimeChangePct}%
-                        </span>
-</div>
-</div>
-<div className="bg-surface-container-lowest border border-outline-variant rounded p-sm flex flex-col justify-between relative overflow-hidden">
-<div className="absolute inset-0 bg-error/5 border-l-4 border-error"></div>
-<div className="relative z-10 flex items-start justify-between mb-2">
-<span className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">AI Risk Level</span>
-<span className="material-symbols-outlined text-error text-[20px]">warning</span>
-</div>
-<div className="relative z-10 flex items-end gap-2">
-<span className="font-data-mono text-[32px] leading-tight font-bold text-error">{kpis.aiRiskLevel}</span>
-</div>
-</div>
-<div className="bg-surface-container-lowest border border-outline-variant rounded p-sm flex flex-col justify-between">
-<div className="flex items-start justify-between mb-2">
-<span className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Active Patrols</span>
-<span className="material-symbols-outlined text-secondary text-[20px]">local_police</span>
-</div>
-<div className="flex items-end gap-2">
-<span className="font-data-mono text-[32px] leading-tight font-bold text-on-surface">{kpis.activePatrols}</span>
-<span className="font-label-md text-label-md text-secondary flex items-center mb-1">
-                            of {kpis.patrolCapacity} units
-                        </span>
-</div>
-</div>
-<div className="bg-surface-container-lowest border border-outline-variant rounded p-sm flex flex-col justify-between">
-<div className="flex items-start justify-between mb-2">
-<span className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Resolved Cases</span>
-<span className="material-symbols-outlined text-secondary text-[20px]">task_alt</span>
-</div>
-<div className="flex items-end gap-2">
-<span className="font-data-mono text-[32px] leading-tight font-bold text-on-surface">{kpis.resolvedCases}</span>
-<span className="font-label-md text-label-md text-on-secondary-container flex items-center mb-1">
-<span className="material-symbols-outlined text-[14px]">arrow_upward</span> {kpis.resolvedChangePct}%
-                        </span>
-</div>
-</div>
-</section>
-{/* Main Bento Grid */}
-<div className="grid grid-cols-1 lg:grid-cols-12 gap-md">
-{/* Chart Section */}
-<div className="lg:col-span-8 bg-surface-container-lowest border border-outline-variant rounded p-md flex flex-col h-[400px]">
-<div className="flex justify-between items-center mb-4">
-<h2 className="font-headline-sm text-headline-sm text-on-surface">7-Day Crime Trends</h2>
-<button className="font-label-md text-label-md text-primary hover:underline flex items-center gap-1">
-                            View Full Report <span className="material-symbols-outlined text-[16px]">chevron_right</span>
-</button>
-</div>
-<div className="flex-1 w-full relative">
-{/* Mock SVG Chart */}
-<svg className="w-full h-full" preserveAspectRatio="none" viewBox="0 0 800 300">
-{/* Grid lines */}
-<line className="chart-grid" x1="0" x2="800" y1="50" y2="50"></line>
-<line className="chart-grid" x1="0" x2="800" y1="125" y2="125"></line>
-<line className="chart-grid" x1="0" x2="800" y1="200" y2="200"></line>
-<line className="chart-grid" x1="0" x2="800" y1="275" y2="275"></line>
-{/* Line */}
-<path className="chart-line" d={trendPath}></path>
-{/* Data points */}
-{trendPoints.map((point) => <circle cx={point.x} cy={point.y} fill="#8c1d18" key={point.day} r="4"></circle>)}
-</svg>
-{/* X Axis Labels */}
-<div className="absolute bottom-0 left-0 w-full flex justify-between font-data-mono text-[10px] text-on-surface-variant pt-2">
-{data.trends.map((item) => <span key={item.day}>{item.day}</span>)}
-</div>
-</div>
-</div>
-{/* Heatmap Preview */}
-<div className="lg:col-span-4 bg-surface-container-lowest border border-outline-variant rounded p-sm flex flex-col h-[400px]">
-<div className="flex justify-between items-center mb-3 px-2 pt-2">
-<h2 className="font-headline-sm text-headline-sm text-on-surface">Density Heatmap</h2>
-<span className="material-symbols-outlined text-secondary">explore</span>
-</div>
-<div className="flex-1 rounded border border-outline-variant overflow-hidden relative">
-<img className="w-full h-full object-cover" data-alt="A detailed, high-contrast digital map interface of Karnataka state, showing a heat map visualization with deep reds and crisp whites, utilitarian professional law enforcement dashboard style, clean and authoritative aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDvMDkoWPQWnOhFJt0HUp0yA0kZtD10NtE-HvyyuX9jdxQQSQ8oxoyectTHp8FhuboJdTGduGT4GSfSs9Fx5Hc8qVH3wh-kWSVLQMQVZ6yJCpj4pzcAUY6A9HfxDv8tMJGUqDr-PSwotphSEVCys2ixILn0xzlaJ1Uz5Iuq6_PmLNM0XRlrrhB0AUTqU5UFSfLXW11U8Jb0JJWPViNHKHqgUTRCjl04C0zQZ9LPWkcYntz9OPE1Ikp8tQ"/>
-<div className="absolute bottom-2 right-2 bg-surface-container-lowest/90 backdrop-blur border border-outline-variant px-2 py-1 rounded font-data-mono text-[10px] text-on-surface">
-                            Live Feed Active
-                        </div>
-</div>
-</div>
-</div>
-{/* Bottom Row */}
-<div className="grid grid-cols-1 lg:grid-cols-2 gap-md">
-{/* AI Alerts Panel */}
-<div className="bg-surface-container-lowest border border-outline-variant rounded p-md flex flex-col">
-<div className="flex justify-between items-center mb-4 pb-2 border-b border-outline-variant">
-<h2 className="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
-<span className="material-symbols-outlined text-primary">campaign</span>
-                            Priority Hotspots
-                        </h2>
-<span className="font-label-md text-label-md bg-error/10 text-error px-2 py-1 rounded">{data.hotspots.filter((item) => item.severity === 'High').length} Critical</span>
-</div>
-<ul className="space-y-3">
-{data.hotspots.slice(0, 3).map((hotspot) => (
-<li className="flex items-start gap-3 p-3 bg-surface border border-outline-variant rounded hover:border-primary transition-colors cursor-pointer" key={hotspot.id}>
-<div className="mt-1">
-<span className={`material-symbols-outlined ${hotspot.severity === 'High' ? 'text-error' : 'text-on-tertiary-container'} fill text-[20px]`}>{hotspot.severity === 'High' ? 'error' : 'warning'}</span>
-</div>
-<div className="flex-1">
-<div className="flex justify-between items-center">
-<span className="font-body-md text-body-md font-bold text-on-surface">{hotspot.name}</span>
-<span className="font-data-mono text-data-mono text-error">{hotspot.confidence}% Confidence</span>
-</div>
-<p className="font-body-sm text-body-sm text-on-surface-variant mt-1">{hotspot.description}</p>
-</div>
-</li>
-))}
-</ul>
-</div>
-{/* District Summary Table */}
-<div className="bg-surface-container-lowest border border-outline-variant rounded flex flex-col overflow-hidden">
-<div className="p-md pb-2">
-<h2 className="font-headline-sm text-headline-sm text-on-surface">District Summaries</h2>
-</div>
-<div className="overflow-x-auto w-full">
-<table className="w-full text-left border-collapse">
-<thead>
-<tr className="bg-[#F3E9D2] border-y border-outline-variant">
-<th className="px-4 py-2 font-data-mono text-[12px] font-bold text-on-surface uppercase">District</th>
-<th className="px-4 py-2 font-data-mono text-[12px] font-bold text-on-surface uppercase text-right">Total Incidents</th>
-<th className="px-4 py-2 font-data-mono text-[12px] font-bold text-on-surface uppercase text-right">Active Units</th>
-<th className="px-4 py-2 font-data-mono text-[12px] font-bold text-on-surface uppercase text-center">Status</th>
-</tr>
-</thead>
-<tbody className="font-data-mono text-data-mono text-on-surface">
-{data.districtSummaries.map((district, index) => (
-<tr className={`border-b border-outline-variant ${index % 2 === 0 ? 'bg-surface-container-lowest' : 'bg-surface'}`} key={district.id}>
-<td className="px-4 py-3">{district.name}</td>
-<td className="px-4 py-3 text-right">{district.totalIncidents}</td>
-<td className="px-4 py-3 text-right">{district.activeUnits}</td>
-<td className="px-4 py-3 text-center"><span className={`w-2 h-2 rounded-full ${district.status === 'critical' ? 'bg-error' : district.status === 'elevated' ? 'bg-on-tertiary-container' : 'bg-secondary'} inline-block`}></span></td>
-</tr>
-))}
-</tbody>
-</table>
-</div>
-</div>
-</div>
-</div>
-{/* Footer */}
-<footer className="w-full py-sm border-t border-outline-variant bg-surface-container-lowest flex flex-col md:flex-row justify-between items-center px-lg mt-auto">
-<div className="font-label-md text-label-md font-bold text-primary mb-2 md:mb-0">
-                KrimeKartā
+    <div className="flex h-screen bg-slate-950 text-slate-100 overflow-hidden font-sans">
+      <Sidebar />
+
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <Header title="KrimeKartā Executive Dashboard" />
+
+        <main className="flex-1 overflow-y-auto p-6 space-y-6">
+          {/* KPI Stat Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-sm flex flex-col justify-between">
+              <div className="flex items-center justify-between text-slate-400 mb-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider">Total Incidents (24h)</span>
+                <span className="material-symbols-outlined text-amber-400 text-[20px]">gavel</span>
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-black text-white">{kpis.totalCrimes24h}</span>
+                <span className="text-xs font-bold text-red-400 flex items-center">
+                  ↑ {kpis.crimeChangePct}% vs prev wk
+                </span>
+              </div>
             </div>
-<div className="font-body-sm text-body-sm text-secondary text-center md:text-left mb-2 md:mb-0">
-                Karnataka Police Intelligence Platform. All Rights Reserved. Official Use Only.
+
+            <div className="bg-slate-900 border border-red-500/40 rounded-xl p-4 shadow-sm flex flex-col justify-between relative overflow-hidden bg-red-950/10">
+              <div className="flex items-center justify-between text-slate-400 mb-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-red-400">AI Risk Assessment</span>
+                <span className="material-symbols-outlined text-red-400 text-[20px]">warning</span>
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-black text-red-400">{kpis.aiRiskLevel}</span>
+                <span className="text-[10px] text-slate-400 font-mono">XGBoost Score: 0.88</span>
+              </div>
             </div>
-<div className="flex gap-4">
-<a className="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="#">Data Source Attributions</a>
-<a className="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="#">Privacy Policy</a>
-<Link className="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" to="/command-center">System Status</Link>
-</div>
-</footer>
-</main>
-</div>
-    </>
+
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-sm flex flex-col justify-between">
+              <div className="flex items-center justify-between text-slate-400 mb-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider">Active Patrol Units</span>
+                <span className="material-symbols-outlined text-emerald-400 text-[20px]">local_police</span>
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-black text-white">{kpis.activePatrols}</span>
+                <span className="text-xs font-bold text-slate-400">of {kpis.patrolCapacity} assigned</span>
+              </div>
+            </div>
+
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-sm flex flex-col justify-between">
+              <div className="flex items-center justify-between text-slate-400 mb-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider">Cases Resolved</span>
+                <span className="material-symbols-outlined text-indigo-400 text-[20px]">task_alt</span>
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-black text-white">{kpis.resolvedCases}</span>
+                <span className="text-xs font-bold text-emerald-400 flex items-center">
+                  ↑ {kpis.resolvedChangePct}% clearance
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Main Content: Real GIS Map & Trends */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Real GIS Leaflet Map (Left Column) */}
+            <div className="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm flex flex-col">
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                  🗺️ Live Geospatial Hotspot Map (Bengaluru Central)
+                </h3>
+                <Link to="/geospatial-map" className="text-xs text-amber-400 hover:underline font-bold flex items-center gap-1">
+                  Full Map View →
+                </Link>
+              </div>
+              <div className="flex-1 min-h-[420px] rounded-lg overflow-hidden border border-slate-800">
+                <GeospatialMap hotspots={hotspots} _district="Bengaluru Central" />
+              </div>
+            </div>
+
+            {/* AI Executive Intelligence Briefing & Trends (Right Column) */}
+            <div className="lg:col-span-5 space-y-6 flex flex-col justify-between">
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm">
+                <div className="flex justify-between items-center mb-3">
+                  <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                    🤖 Gemini 2.0 Flash Executive Briefing
+                  </h3>
+                  <span className="text-[10px] bg-indigo-500/20 text-indigo-300 font-bold px-2 py-0.5 rounded">
+                    LIVE INTEL
+                  </span>
+                </div>
+
+                {briefing ? (
+                  <div className="space-y-3 text-xs">
+                    <p className="text-slate-300 bg-slate-950/70 p-3 rounded-lg border border-slate-800 font-body leading-relaxed">
+                      {briefing.executive_summary}
+                    </p>
+
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
+                        Commander Operational Directives:
+                      </span>
+                      <ul className="space-y-1.5 list-disc pl-4 text-slate-200">
+                        {briefing.actionable_directives.map((dir, idx) => (
+                          <li key={idx}>{dir}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-400">Loading AI Briefing...</p>
+                )}
+              </div>
+
+              {/* 7-Day Crime Trends Chart */}
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm">
+                <h3 className="text-sm font-bold text-white mb-3">Weekly Crime Volume Trend</h3>
+                <div className="flex items-end justify-between gap-2 h-32 pt-4 px-2">
+                  {trendValues.map((val, idx) => (
+                    <div key={idx} className="flex flex-col items-center gap-1 flex-1">
+                      <div
+                        className="w-full bg-red-600/80 hover:bg-red-500 rounded-t transition-all"
+                        style={{ height: `${(val / 80) * 100}%` }}
+                      ></div>
+                      <span className="text-[10px] text-slate-400 font-mono">{trendDays[idx]}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
   );
-};
-
-export default DashboardOverview;
-
-const dashboardFallback = {
-  kpis: {
-    totalCrimes24h: 142,
-    crimeChangePct: 12,
-    aiRiskLevel: 'ELEVATED',
-    activePatrols: 87,
-    patrolCapacity: 120,
-    resolvedCases: 45,
-    resolvedChangePct: 5
-  },
-  trends: [
-    { day: 'Mon', count: 87 },
-    { day: 'Tue', count: 96 },
-    { day: 'Wed', count: 113 },
-    { day: 'Thu', count: 91 },
-    { day: 'Fri', count: 128 },
-    { day: 'Sat', count: 139 },
-    { day: 'Sun', count: 122 }
-  ],
-  hotspots: [
-    { id: 'local-1', name: 'Shivajinagar Market', confidence: 94, severity: 'High', description: 'Predicted spike in petty theft next 2 hours based on historical match event.' }
-  ],
-  districtSummaries: [
-    { id: 'blr', name: 'Bengaluru Central', totalIncidents: 45, activeUnits: 24, status: 'critical' }
-  ]
-};
+}
