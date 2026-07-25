@@ -15,6 +15,8 @@ const PORT = Number(process.env.PORT || 3001);
 const JWT_SECRET = process.env.JWT_SECRET || 'krimekarta-local-dev-secret';
 const TOKEN_TTL = '8h';
 const DEV_OTP = process.env.DEV_OTP || '123456';
+const STORE_MIN_CRIMES = Number(process.env.STORE_MIN_CRIMES || 300);
+const authAttempts = new Map();
 
 const seed = {
   users: [
@@ -192,14 +194,105 @@ const seed = {
   auditLogs: []
 };
 
+const crimeCategories = ['Property Crime', 'Cyber Crime', 'Narcotics (NDPS)', 'Financial Fraud', 'Organized Crime', 'Public Order', 'Traffic Violation'];
+const priorityByCategory = {
+  'Narcotics (NDPS)': 'High',
+  'Organized Crime': 'High',
+  'Cyber Crime': 'Medium',
+  'Financial Fraud': 'Medium',
+  'Property Crime': 'Medium',
+  'Public Order': 'Low',
+  'Traffic Violation': 'Low'
+};
+
+function deterministicNumber(seedText, min, max) {
+  const hash = crypto.createHash('sha256').update(seedText).digest();
+  const value = hash.readUInt32BE(0) / 0xffffffff;
+  return min + value * (max - min);
+}
+
+function generateSyntheticCrimes(data, target = STORE_MIN_CRIMES) {
+  if (data.crimes.length >= target) return data.crimes;
+  const existing = [...data.crimes];
+  const districts = data.districts.map((district) => district.name);
+  const stations = data.policeStations;
+  const titles = {
+    'Property Crime': ['Vehicle theft cluster near transit hub', 'Burglary pattern in commercial lane', 'Chain snatching reported near market'],
+    'Cyber Crime': ['UPI mule account network detected', 'Phishing wave targeting public portal', 'SIM swap fraud linked to call center'],
+    'Narcotics (NDPS)': ['Contraband handoff flagged near highway checkpost', 'Repeat peddling activity near college corridor', 'Synthetic drug supply chain lead'],
+    'Financial Fraud': ['ATM skimming device suspected', 'Loan app extortion complaint cluster', 'Investment scam complaints consolidated'],
+    'Organized Crime': ['Extortion threat reported by logistics operator', 'Inter-district syndicate movement flagged', 'Repeat offender congregation alert'],
+    'Public Order': ['Crowd-control incident after public event', 'Nuisance reports around nightlife zone', 'Noise and public disorder complaints'],
+    'Traffic Violation': ['Hit-and-run investigation under review', 'Reckless driving cluster from ANPR feed', 'Drunk driving checkpoint escalation']
+  };
+
+  for (let i = existing.length; i < target; i += 1) {
+    const category = crimeCategories[i % crimeCategories.length];
+    const district = districts[i % districts.length];
+    const station = stations.find((item) => item.district === district) || stations[i % stations.length];
+    const date = new Date(Date.UTC(2026, 6, 24));
+    date.setUTCDate(date.getUTCDate() - (i % 90));
+    const hour = Math.floor(deterministicNumber(`${i}:hour`, 0, 23));
+    const minute = Math.floor(deterministicNumber(`${i}:minute`, 0, 59));
+    const lat = station.lat + deterministicNumber(`${i}:lat`, -0.035, 0.035);
+    const lng = station.lng + deterministicNumber(`${i}:lng`, -0.035, 0.035);
+    const priority = priorityByCategory[category] || 'Medium';
+    existing.push({
+      id: `cr-syn-${String(i + 1).padStart(4, '0')}`,
+      recordId: `CR-26-${String(9000 + i + 1).padStart(5, '0')}`,
+      fir: `FIR ${100 + (i % 800)}/2026`,
+      date: date.toISOString().slice(0, 10),
+      time: `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`,
+      priority,
+      category,
+      title: titles[category][i % titles[category].length],
+      district,
+      station: station.name,
+      status: i % 8 === 0 ? 'Closed/Archived' : i % 5 === 0 ? 'Under Review' : 'Active Invest.',
+      lat: Number(lat.toFixed(6)),
+      lng: Number(lng.toFixed(6)),
+      suspects: Math.floor(deterministicNumber(`${i}:suspects`, 1, priority === 'High' ? 7 : 4)),
+      arrests: Math.floor(deterministicNumber(`${i}:arrests`, 0, 3)),
+      documents: Math.floor(deterministicNumber(`${i}:docs`, 2, 13)),
+      summary: `${category} report generated from KSP operational seed data for ${district}. Pattern indicators include time-of-day clustering, repeat-location proximity, and jurisdictional workload.`
+    });
+  }
+  return existing;
+}
+
+function normalizeStore(data) {
+  const normalized = {
+    ...seed,
+    ...data,
+    users: data.users?.length ? data.users : seed.users,
+    districts: data.districts?.length ? data.districts : seed.districts,
+    policeStations: data.policeStations?.length ? data.policeStations : seed.policeStations,
+    crimes: data.crimes?.length ? data.crimes : seed.crimes,
+    criminals: data.criminals?.length ? data.criminals : seed.criminals,
+    recommendations: data.recommendations?.length ? data.recommendations : seed.recommendations,
+    patrolUnits: data.patrolUnits?.length ? data.patrolUnits : seed.patrolUnits,
+    alerts: data.alerts?.length ? data.alerts : seed.alerts,
+    feedback: data.feedback || [],
+    auditLogs: data.auditLogs || []
+  };
+  normalized.crimes = generateSyntheticCrimes(normalized);
+  normalized.crimeCategories = crimeCategories;
+  return normalized;
+}
+
 async function ensureStore() {
   await fs.mkdir(dataDir, { recursive: true });
   try {
     const raw = await fs.readFile(dataFile, 'utf8');
-    return JSON.parse(raw);
+    const data = normalizeStore(JSON.parse(raw));
+    if ((JSON.parse(raw).crimes || []).length !== data.crimes.length) {
+      await writeStore(data);
+    }
+    return data;
   } catch {
-    await fs.writeFile(dataFile, JSON.stringify(seed, null, 2));
-    return structuredClone(seed);
+    const initial = normalizeStore(structuredClone(seed));
+    await fs.writeFile(dataFile, JSON.stringify(initial, null, 2));
+    return initial;
   }
 }
 
@@ -220,6 +313,28 @@ function publicUser(user) {
 
 function sign(user) {
   return jwt.sign({ sub: user.id, role: user.role, serviceId: user.serviceId }, JWT_SECRET, { expiresIn: TOKEN_TTL });
+}
+
+function checkPassword(user, password) {
+  if (user.passwordHash) {
+    const [salt, expected] = user.passwordHash.split(':');
+    const actual = crypto.pbkdf2Sync(String(password), salt, 120000, 32, 'sha256').toString('hex');
+    return crypto.timingSafeEqual(Buffer.from(actual), Buffer.from(expected));
+  }
+  return user.password === password;
+}
+
+function authRateLimit(req, res, next) {
+  const key = req.ip || 'local';
+  const now = Date.now();
+  const windowMs = 15 * 60 * 1000;
+  const attempts = (authAttempts.get(key) || []).filter((timestamp) => now - timestamp < windowMs);
+  if (attempts.length >= 25) {
+    return res.status(429).json({ error: { code: 'RATE_LIMITED', message: 'Too many authentication attempts. Try again later.' } });
+  }
+  attempts.push(now);
+  authAttempts.set(key, attempts);
+  next();
 }
 
 function requireAuth(req, res, next) {
@@ -382,14 +497,14 @@ app.use(express.json({ limit: '1mb' }));
 app.use(morgan('dev'));
 
 app.get('/health', (_req, res) => {
-  res.json({ status: 'ok', service: 'krimekarta-backend', time: new Date().toISOString() });
+  res.json({ status: 'operational', service: 'krimekarta-backend', time: new Date().toISOString() });
 });
 
-app.post('/api/v1/auth/login', async (req, res) => {
+app.post('/api/v1/auth/login', authRateLimit, async (req, res) => {
   const { serviceId, password } = req.body || {};
   const data = await readStore();
   const user = data.users.find((candidate) => candidate.serviceId.toLowerCase() === String(serviceId || '').toLowerCase());
-  if (!user || user.password !== password) {
+  if (!user || !checkPassword(user, password)) {
     return res.status(401).json({ error: { code: 'INVALID_CREDENTIALS', message: 'Invalid service ID or password.' } });
   }
   const mfaToken = crypto.randomUUID();
@@ -428,6 +543,13 @@ app.get('/api/v1/crimes', requireAuth, async (req, res) => {
   res.json({ items: rows.slice((page - 1) * limit, page * limit), total: rows.length, page, limit });
 });
 
+app.get('/api/v1/crimes/:id', requireAuth, async (req, res) => {
+  const data = await readStore();
+  const item = data.crimes.find((crime) => crime.id === req.params.id || crime.recordId === req.params.id);
+  if (!item) return res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Crime record not found.' } });
+  res.json(item);
+});
+
 app.post('/api/v1/crimes', requireAuth, async (req, res) => {
   const data = await readStore();
   const item = {
@@ -459,6 +581,27 @@ app.patch('/api/v1/crimes/:id', requireAuth, async (req, res) => {
   res.json(data.crimes[index]);
 });
 
+app.delete('/api/v1/crimes/:id', requireAuth, async (req, res) => {
+  const data = await readStore();
+  const index = data.crimes.findIndex((crime) => crime.id === req.params.id);
+  if (index < 0) return res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Crime record not found.' } });
+  const [deleted] = data.crimes.splice(index, 1);
+  data.auditLogs.push({ id: crypto.randomUUID(), action: 'CRIME_DELETED', userId: req.auth.sub, targetId: deleted.id, createdAt: new Date().toISOString() });
+  await writeStore(data);
+  res.status(204).send();
+});
+
+app.get('/api/v1/districts', requireAuth, async (_req, res) => {
+  const data = await readStore();
+  res.json({ items: dashboard(data).districtSummaries, total: data.districts.length });
+});
+
+app.get('/api/v1/police-stations', requireAuth, async (req, res) => {
+  const data = await readStore();
+  const items = req.query.district ? data.policeStations.filter((station) => station.district === req.query.district) : data.policeStations;
+  res.json({ items, total: items.length });
+});
+
 app.get('/api/v1/criminals', requireAuth, async (_req, res) => {
   const data = await readStore();
   res.json({ items: data.criminals, total: data.criminals.length });
@@ -473,6 +616,16 @@ app.get('/api/v1/analytics/summary', requireAuth, async (_req, res) => {
 });
 
 app.get('/api/v1/ai/patrol/recommendations', requireAuth, async (_req, res) => {
+  const data = await readStore();
+  res.json({ items: data.recommendations, feedback: data.feedback });
+});
+
+app.get('/api/v1/hotspots/recommendations', requireAuth, async (_req, res) => {
+  const data = await readStore();
+  res.json({ items: geoOverview(data).hotspots, generatedAt: new Date().toISOString(), model: 'deterministic-risk-v1' });
+});
+
+app.get('/api/v1/patrol/recommendations', requireAuth, async (_req, res) => {
   const data = await readStore();
   res.json({ items: data.recommendations, feedback: data.feedback });
 });
@@ -503,6 +656,29 @@ app.get('/api/v1/network/graph', requireAuth, async (_req, res) => {
   res.json(networkGraph(await readStore()));
 });
 
+app.get('/api/v1/briefing/:district', requireAuth, async (req, res) => {
+  const data = await readStore();
+  const district = req.params.district;
+  const districtCrimes = data.crimes.filter((crime) => crime.district.toLowerCase() === district.toLowerCase());
+  const highPriority = districtCrimes.filter((crime) => crime.priority === 'High').length;
+  const topCategories = Object.entries(districtCrimes.reduce((acc, crime) => {
+    acc[crime.category] = (acc[crime.category] || 0) + 1;
+    return acc;
+  }, {})).sort((a, b) => b[1] - a[1]).slice(0, 3);
+  res.json({
+    title: `${district} Intelligence Brief`,
+    generatedAt: new Date().toISOString(),
+    district,
+    summary: `${district} has ${districtCrimes.length} seeded operational records in the current analysis window, including ${highPriority} high-priority incidents. Dominant categories are ${topCategories.map(([name, count]) => `${name} (${count})`).join(', ') || 'not available'}.`,
+    actions: [
+      'Prioritize night patrols around repeat-location clusters.',
+      'Pair station-level review with cyber and property-crime prevention messaging.',
+      'Escalate high-priority repeat-offender records to district intelligence review.'
+    ],
+    caveat: 'This is decision-support output generated from seeded and operational records; officer judgment remains authoritative.'
+  });
+});
+
 app.get('/api/v1/command-center/status', requireAuth, async (_req, res) => {
   const data = await readStore();
   res.json({
@@ -529,6 +705,39 @@ app.get('/api/v1/reports/intelligence-brief', requireAuth, async (_req, res) => 
   });
 });
 
+app.get('/api/v1/reports/daily', requireAuth, async (_req, res) => {
+  const data = await readStore();
+  res.json({
+    reportId: `RPT-${new Date().toISOString().slice(0, 10)}`,
+    generatedAt: new Date().toISOString(),
+    dashboard: dashboard(data),
+    analytics: analytics(data),
+    commandStatus: {
+      openAlerts: data.alerts.length,
+      deployedUnits: data.patrolUnits.filter((unit) => unit.status === 'deployed').length,
+      pendingRecommendations: data.recommendations.filter((item) => item.status === 'pending').length
+    }
+  });
+});
+
+app.get('/api/v1/reports/intelligence-brief/download', requireAuth, async (_req, res) => {
+  const data = await readStore();
+  const brief = analytics(data).executiveSummary;
+  const body = [
+    'KrimeKarta Daily Intelligence Brief',
+    `Generated: ${new Date().toISOString()}`,
+    '',
+    brief.headline,
+    '',
+    ...brief.insights.map((item) => `${item.title}: ${item.body}`),
+    '',
+    `Recommended deployment: ${brief.recommendation}`
+  ].join('\n');
+  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+  res.setHeader('Content-Disposition', 'attachment; filename="krimekarta-intelligence-brief.txt"');
+  res.send(body);
+});
+
 app.use((req, res) => {
   res.status(404).json({ error: { code: 'ROUTE_NOT_FOUND', message: `${req.method} ${req.path} is not available.` } });
 });
@@ -538,6 +747,10 @@ app.use((err, _req, res, _next) => {
   res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Unexpected backend error.' } });
 });
 
-app.listen(PORT, () => {
-  console.log(`KrimeKarta backend listening on http://localhost:${PORT}`);
-});
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  app.listen(PORT, () => {
+    console.log(`KrimeKarta backend listening on http://localhost:${PORT}`);
+  });
+}
+
+export { app, readStore };

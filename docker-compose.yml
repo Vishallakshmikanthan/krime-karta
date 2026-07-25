@@ -1,0 +1,33 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    environment:
+      PORT: 3001
+      CORS_ORIGIN: http://localhost:5173
+      JWT_SECRET: ${JWT_SECRET:-replace-this-with-a-long-random-secret}
+      DEV_OTP: ${DEV_OTP:-123456}
+      STORE_MIN_CRIMES: 300
+    ports:
+      - "3001:3001"
+    volumes:
+      - krimekarta-data:/app/data
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3001/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: http://localhost:3001/api/v1
+    ports:
+      - "5173:4173"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  krimekarta-data:
