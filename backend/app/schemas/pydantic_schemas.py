@@ -1,6 +1,6 @@
 from typing import List, Optional, Any
 from datetime import datetime
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, ConfigDict
 
 class Token(BaseModel):
     access_token: str
@@ -25,6 +25,7 @@ class UserCreate(BaseModel):
     district: str = "Bengaluru Central"
 
 class UserResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     id: int
     username: str
     email: str
@@ -32,10 +33,8 @@ class UserResponse(BaseModel):
     district: str
     is_active: bool
 
-    class Config:
-        from_attributes = True
-
 class CrimeRecordSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     id: Optional[int] = None
     fir_number: str
     title: str
@@ -49,9 +48,6 @@ class CrimeRecordSchema(BaseModel):
     station_name: str
     occured_at: Optional[datetime] = None
     description: Optional[str] = None
-
-    class Config:
-        from_attributes = True
 
 class GeoJSONFeature(BaseModel):
     type: str = "Feature"
