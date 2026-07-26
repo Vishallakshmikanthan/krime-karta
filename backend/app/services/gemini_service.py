@@ -7,7 +7,7 @@ class GeminiBriefingService:
     def __init__(self):
         self.nemotron_api_key = settings.NEMOTRON_API_KEY
         self.nemotron_url = "https://integrate.api.nvidia.com/v1/chat/completions"
-        self.nemotron_model = "nvidia/nemotron-3-ultra-550b-instruct"
+        self.nemotron_model = "nvidia/nemotron-4-340b-instruct"
 
     def generate_district_briefing(self, district: str = "Bengaluru Central", period: str = "24h") -> Dict[str, Any]:
         prompt = (
