@@ -94,7 +94,7 @@ export default function AiPatrolRecommendationCenter() {
                   {rec.status === 'PENDING_REVIEW' && (
                     <div className="flex gap-3 mt-1">
                       <button onClick={() => handleDecision(rec.id, 'APPROVE')} className="flex-1 bg-primary text-on-primary font-bold py-2 rounded text-xs shadow-sm hover:opacity-90 transition-opacity">
-                        Approve & Dispatch Unit
+                        Approve & Dispatch Specialized Team (CCB/KSRP)
                       </button>
                       <button onClick={() => handleDecision(rec.id, 'REJECT')} className="flex-1 bg-surface-container-high text-on-surface font-bold py-2 rounded text-xs border border-outline-variant hover:bg-surface-dim transition-colors">
                         Overrule AI Directive

@@ -5,19 +5,22 @@ import Header from '../components/layout/Header';
 import GeospatialMap from '../components/maps/GeospatialMap';
 import ErrorBoundary from '../components/layout/ErrorBoundary';
 import { fetchHotspots, fetchBriefing } from '../services/apiClient';
+import { useAppStore } from '../store/useStore';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 export default function DashboardOverview() {
   const [hotspots, setHotspots] = useState([]);
   const [briefing, setBriefing] = useState(null);
+  const { selectedDistrict } = useAppStore();
 
   useEffect(() => {
-    fetchHotspots('Bengaluru City', 48).then((res) => {
+    fetchHotspots(selectedDistrict, 48).then((res) => {
       if (res && res.predictions) setHotspots(res.predictions);
     });
-    fetchBriefing('Bengaluru City').then((res) => {
+    fetchBriefing(selectedDistrict).then((res) => {
       if (res) setBriefing(res);
     });
-  }, []);
+  }, [selectedDistrict]);
 
   const kpis = {
     totalCrimesH1: '106,417',
@@ -29,8 +32,14 @@ export default function DashboardOverview() {
     preventiveBonds: '5,137'
   };
 
-  const trendDays = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-  const trendValues = [17634, 16740, 18882, 17420, 17828, 17853];
+  const chartData = [
+    { name: 'Jan', value: 17634 },
+    { name: 'Feb', value: 16740 },
+    { name: 'Mar', value: 18882 },
+    { name: 'Apr', value: 17420 },
+    { name: 'May', value: 17828 },
+    { name: 'Jun', value: 17853 },
+  ];
 
   return (
     <div className="flex h-screen bg-surface text-on-surface font-body-md overflow-hidden antialiased">
@@ -39,8 +48,19 @@ export default function DashboardOverview() {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <Header title="KrimeKartā Executive Dashboard — Karnataka SCRB Command Center" />
 
-        <main className="flex-1 overflow-y-auto p-6 space-y-6 bg-surface-bright">
-          {/* KPI Stat Cards */}
+        <main className="flex-1 overflow-y-auto p-6 relative z-0 flex flex-col bg-surface-bright">
+          {/* Background Emblems */}
+          <div className="absolute inset-0 pointer-events-none opacity-[0.03] z-[-1]"
+            style={{
+              backgroundImage: `url('https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Seal_of_Karnataka.svg/1200px-Seal_of_Karnataka.svg.png'), url('https://upload.wikimedia.org/wikipedia/en/thumb/e/ef/Karnataka_Police_Logo.svg/1200px-Karnataka_Police_Logo.svg.png')`,
+              backgroundPosition: 'left 5% center, right 5% center',
+              backgroundRepeat: 'no-repeat, no-repeat',
+              backgroundSize: '400px, 450px'
+            }}
+          />
+          
+          <div className="space-y-6 flex-1 flex flex-col">
+            {/* KPI Stat Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 shadow-sm flex flex-col justify-between">
               <div className="flex items-center justify-between text-on-surface-variant mb-2">
@@ -68,12 +88,12 @@ export default function DashboardOverview() {
 
             <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 shadow-sm flex flex-col justify-between">
               <div className="flex items-center justify-between text-on-surface-variant mb-2">
-                <span className="text-[11px] font-bold uppercase tracking-wider">Logged Patrol Fleet</span>
+                <span className="text-[11px] font-bold uppercase tracking-wider">Active Tactical & Patrol Units</span>
                 <span className="material-symbols-outlined text-primary text-[20px]">local_police</span>
               </div>
               <div className="flex items-baseline gap-2">
                 <span className="text-3xl font-black text-on-surface">{kpis.activePatrols}</span>
-                <span className="text-xs font-bold text-on-surface-variant">of {kpis.patrolFleet} vehicles</span>
+                <span className="text-xs font-bold text-on-surface-variant">of {kpis.patrolFleet} deployed (KSRP/CAR)</span>
               </div>
             </div>
 
@@ -105,7 +125,7 @@ export default function DashboardOverview() {
               </div>
               <div className="flex-1 w-full relative rounded-lg overflow-hidden border border-outline-variant z-10">
                 <ErrorBoundary>
-                  <GeospatialMap hotspots={hotspots} _district="Bengaluru City" />
+                  <GeospatialMap hotspots={hotspots} _district={selectedDistrict} />
                 </ErrorBoundary>
               </div>
             </div>
@@ -145,21 +165,40 @@ export default function DashboardOverview() {
               </div>
 
               {/* Monthly Crime Trends Chart */}
-              <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 shadow-sm h-48">
+              <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 shadow-sm h-48 flex flex-col">
                 <h3 className="text-sm font-bold text-on-surface mb-3">Monthly Cognizable Crimes (Jan – Jun 2026)</h3>
-                <div className="flex items-end justify-between gap-2 h-28 pt-2 px-2">
-                  {trendValues.map((val, idx) => (
-                    <div key={idx} className="flex flex-col items-center gap-1 flex-1 h-full justify-end">
-                      <div
-                        className="w-full bg-primary/80 hover:bg-primary rounded-t transition-all"
-                        style={{ height: `${(val / 20000) * 100}%` }}
-                      ></div>
-                      <span className="text-[10px] text-on-surface-variant font-mono">{trendDays[idx]} ({Math.round(val/1000)}k)</span>
-                    </div>
-                  ))}
+                <div className="flex-1 w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={chartData} margin={{ top: 5, right: 5, left: -25, bottom: 0 }}>
+                      <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#6b7280' }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fontSize: 10, fill: '#6b7280' }} axisLine={false} tickLine={false} />
+                      <Tooltip 
+                        contentStyle={{ backgroundColor: '#1a1a1a', border: 'none', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
+                        itemStyle={{ color: '#fff' }}
+                      />
+                      <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                        {chartData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={index === chartData.length - 1 ? '#ba1a1a' : '#0ea5e9'} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* Police Team Status Footer */}
+          <div className="bg-surface-container-low border border-outline-variant rounded-lg p-3 shadow-sm mt-auto flex items-center gap-4 shrink-0">
+            <span className="material-symbols-outlined text-primary animate-pulse">radio</span>
+            <span className="font-bold text-sm whitespace-nowrap text-on-surface">LIVE DISPATCH:</span>
+            <div className="flex-1 overflow-hidden">
+              <marquee className="text-sm text-on-surface-variant font-medium pt-1" scrollamount="5">
+                🟢 CCB Unit Alpha - Deployed in Sector 4 | 🟢 ARS Team Bravo - Surveillance on Rajan Varma | 🔴 KSRP Battalion 2 - Responding to Rioting at Hubballi | 🟢 Garuda Force - Patrolling NH-44 | 🟡 Traffic Intel - Heavy congestion at Silk Board, routing patrols...
+              </marquee>
+            </div>
+          </div>
+
           </div>
         </main>
       </div>

@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     
     # Gemini AI Studio Key
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
+    NEMOTRON_API_KEY: str = os.getenv("NEMOTRON_API_KEY", "")
     
     # CORS
     CORS_ORIGINS: list[str] = [

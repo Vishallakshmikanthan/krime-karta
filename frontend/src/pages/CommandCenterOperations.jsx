@@ -11,15 +11,17 @@ export default function CommandCenterOperations() {
   ];
 
   const liveAlerts = [
-    { type: 'CRITICAL', time: '08:52:10', message: 'Geofence Breach: Category A Rowdy (Vikram Gowda) detected near Majestic', source: 'LPR Camera 4' },
-    { type: 'HIGH', time: '08:45:00', message: 'Anomaly: 300% spike in MV Theft reports in Whitefield', source: 'CCTNS Sync' },
-    { type: 'MEDIUM', time: '08:30:15', message: 'Cyber Fraud Alert: 1930 Helpline received 15 calls for Job Fraud', source: '1930 API' },
+    { type: 'CRITICAL', time: '08:52:10', message: 'Geofence Breach: Category A Rowdy (Vikram Gowda) detected near Majestic. ARS Strike Team Alerted.', source: 'LPR Camera 4' },
+    { type: 'HIGH', time: '08:45:00', message: 'Anomaly: 300% spike in MV Theft reports in Whitefield. Deploying CAR reserve.', source: 'CCTNS Sync' },
+    { type: 'MEDIUM', time: '08:30:15', message: 'Cyber Fraud Alert: 1930 Helpline received 15 calls for Job Fraud. Routed to CEN Police Station.', source: '1930 API' },
   ];
 
   const liveAuditLogs = [
-    { time: '08:12:04', user: 'DCP Ananya Rao (CCB)', action: 'Queried CCB Rowdy-Sheet Dossier for Wilson Garden Naga', ip: '10.24.102.4' },
-    { time: '08:05:18', user: 'Insp. Gowda (West Div)', action: 'Issued BNSS Sec 129 Bond Over Proceeding for Cycle Ravi', ip: '10.24.102.18' },
-    { time: '07:50:33', user: 'SP Outer Range', action: 'Approved Inter-District Highway Patrol Route for Kunigal Giri Dacoity Zone', ip: '10.24.102.32' },
+    { time: '08:12:04', user: 'DCP Ananya Rao (CCB)', action: 'Queried CCB Organized Crime Wing (OCW) Dossier for Wilson Garden Naga', ip: '10.24.102.4' },
+    { time: '08:05:18', user: 'Insp. Gowda (ARS)', action: 'Anti-Rowdy Squad (ARS) issued BNSS Sec 129 Bond Over Proceeding for Cycle Ravi', ip: '10.24.102.18' },
+    { time: '07:50:33', user: 'Cmdr. Patil (Garuda)', action: 'Garuda Force deployed for tactical operation simulation', ip: '10.24.102.32' },
+    { time: '07:15:22', user: 'SFPB Desk', action: 'State Finger Print Bureau (SFPB) confirmed cross-district match for dacoity case', ip: '10.24.102.11' },
+    { time: '06:42:10', user: 'EOW Analyst', action: 'Economic Offences Wing (EOW) flagged major hawala transaction via CEN node', ip: '10.24.102.9' }
   ];
 
   const renderLoadBar = (load) => {

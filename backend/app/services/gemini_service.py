@@ -1,24 +1,13 @@
 import datetime
 from typing import Dict, Any, List
 from app.config import settings
-
-try:
-    import google.generativeai as genai
-    HAS_GEMINI_SDK = True
-except ImportError:
-    HAS_GEMINI_SDK = False
+import httpx
 
 class GeminiBriefingService:
     def __init__(self):
-        self.api_key = settings.GEMINI_API_KEY
-        if HAS_GEMINI_SDK and self.api_key:
-            try:
-                genai.configure(api_key=self.api_key)
-                self.model = genai.GenerativeModel("gemini-2.0-flash")
-            except Exception:
-                self.model = None
-        else:
-            self.model = None
+        self.nemotron_api_key = settings.NEMOTRON_API_KEY
+        self.nemotron_url = "https://integrate.api.nvidia.com/v1/chat/completions"
+        self.nemotron_model = "nvidia/nemotron-3-ultra-550b-instruct"
 
     def generate_district_briefing(self, district: str = "Bengaluru Central", period: str = "24h") -> Dict[str, Any]:
         prompt = (
@@ -26,10 +15,25 @@ class GeminiBriefingService:
             f"over the past {period}. Reference official State Crime Records Bureau (SCRB 2026) data, BNS statutory heads, CCTNS logs, and active rowdy sheet monitoring."
         )
 
-        if self.model:
+        if self.nemotron_api_key:
             try:
-                response = self.model.generate_content(prompt)
-                text = response.text
+                headers = {
+                    "Authorization": f"Bearer {self.nemotron_api_key}",
+                    "Content-Type": "application/json"
+                }
+                payload = {
+                    "model": self.nemotron_model,
+                    "messages": [{"role": "user", "content": prompt}],
+                    "temperature": 0.2,
+                    "max_tokens": 1024,
+                }
+                
+                with httpx.Client() as client:
+                    resp = client.post(self.nemotron_url, headers=headers, json=payload, timeout=10.0)
+                    resp.raise_for_status()
+                    data = resp.json()
+                    text = data["choices"][0]["message"]["content"]
+                    
                 return {
                     "district": district,
                     "period": period,
@@ -40,10 +44,11 @@ class GeminiBriefingService:
                         "Execute BNSS Sec 126/129 bond over proceedings against active rowdy-sheet list (Wilson Garden Naga, Cycle Ravi, Bomb Naga networks).",
                         "Enforce strict CCTNS vehicle log entries and night checkpoint inspections across high-risk sectors."
                     ],
-                    "model_version": "Gemini 2.0 Flash Live API (Karnataka SCRB Synchronized)",
+                    "model_version": f"Nemotron Live API ({self.nemotron_model})",
                     "generated_at": datetime.datetime.utcnow().isoformat() + "Z"
                 }
-            except Exception:
+            except Exception as e:
+                print(f"Nemotron API failed: {e}")
                 pass # Fallback below
 
         # Authenticated Karnataka SCRB Operational Intelligence Fallback Briefing

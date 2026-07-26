@@ -5,6 +5,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGri
 
 export default function StrategicAnalytics() {
   const [timeRange, setTimeRange] = useState('H1-2026');
+  const [selectedDistrict, setSelectedDistrict] = useState(null);
 
   // Authenticated SCRB 2026 Category Monthly Distribution based on timeRange
   const dataByYear = {
@@ -166,8 +167,13 @@ export default function StrategicAnalytics() {
                   </thead>
                   <tbody className="divide-y divide-outline-variant">
                     {districts.map((d, idx) => (
-                      <tr key={idx} className="hover:bg-surface-container-low/60 transition-colors">
-                        <td className="p-2 font-bold text-on-surface">{d.name}</td>
+                      <tr 
+                        key={idx} 
+                        onClick={() => setSelectedDistrict(d)}
+                        className="hover:bg-surface-container-low/80 transition-colors cursor-pointer group"
+                        title="Click to view district drill-down"
+                      >
+                        <td className="p-2 font-bold text-on-surface group-hover:text-primary transition-colors">{d.name}</td>
                         <td className="p-2 font-mono">{d.ipcYtd.toLocaleString()}</td>
                         <td className="p-2 font-mono text-on-surface-variant">{d.sllYtd.toLocaleString()}</td>
                         <td className="p-2 font-mono font-bold text-primary">{d.totalH1.toLocaleString()}</td>
@@ -216,6 +222,117 @@ export default function StrategicAnalytics() {
           
         </main>
       </div>
+
+      {/* District Drill-down Modal */}
+      {selectedDistrict && (
+        <div className="fixed inset-0 bg-on-surface/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-surface-container-lowest border border-outline-variant rounded-xl w-full max-w-3xl shadow-2xl overflow-hidden text-on-surface flex flex-col max-h-[90vh]">
+            <div className="p-5 border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
+              <div>
+                <h3 className="text-xl font-bold text-on-surface flex items-center gap-2">
+                  <span className="material-symbols-outlined text-primary">location_city</span>
+                  {selectedDistrict.name} Drill-Down
+                </h3>
+                <p className="text-xs text-on-surface-variant mt-1 font-bold">Risk Classification: <span className="text-error">{selectedDistrict.tier}</span></p>
+              </div>
+              <button onClick={() => setSelectedDistrict(null)} className="text-on-surface-variant hover:text-on-surface transition-colors">
+                <span className="material-symbols-outlined text-[24px]">close</span>
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto space-y-6">
+              {/* Top Stats */}
+              <div className="grid grid-cols-3 gap-4">
+                <div className="bg-surface-container-low p-4 rounded-lg border border-outline-variant text-center">
+                  <span className="text-xs font-bold text-on-surface-variant uppercase tracking-wider block mb-1">IPC / BNS Crimes</span>
+                  <span className="text-2xl font-black text-on-surface font-mono">{selectedDistrict.ipcYtd.toLocaleString()}</span>
+                </div>
+                <div className="bg-surface-container-low p-4 rounded-lg border border-outline-variant text-center">
+                  <span className="text-xs font-bold text-on-surface-variant uppercase tracking-wider block mb-1">SLL Crimes</span>
+                  <span className="text-2xl font-black text-on-surface font-mono">{selectedDistrict.sllYtd.toLocaleString()}</span>
+                </div>
+                <div className="bg-surface-container-low p-4 rounded-lg border border-primary/30 text-center relative overflow-hidden">
+                  <div className="absolute inset-0 bg-primary/5"></div>
+                  <span className="text-xs font-bold text-primary uppercase tracking-wider block mb-1 relative z-10">Total Volume (H1)</span>
+                  <span className="text-2xl font-black text-primary font-mono relative z-10">{selectedDistrict.totalH1.toLocaleString()}</span>
+                </div>
+              </div>
+
+              {/* Specific breakdown (mocked based on district selected) */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <h4 className="font-bold text-sm text-on-surface mb-3 border-b border-outline-variant pb-1">Top Crime Modus Operandi</h4>
+                  <ul className="space-y-3">
+                    <li className="flex justify-between items-center bg-surface-container-high px-3 py-2 rounded">
+                      <span className="text-xs font-bold">{selectedDistrict.name.includes('Bengaluru') ? 'Cyber Fraud & Phishing' : 'Property Theft / Burglary'}</span>
+                      <span className="text-xs font-mono font-bold text-error">42%</span>
+                    </li>
+                    <li className="flex justify-between items-center bg-surface-container-high px-3 py-2 rounded">
+                      <span className="text-xs font-bold">{selectedDistrict.name.includes('Bengaluru') ? 'Vehicle Theft (2W)' : 'Agricultural / Rural Disputes'}</span>
+                      <span className="text-xs font-mono font-bold text-orange-500">28%</span>
+                    </li>
+                    <li className="flex justify-between items-center bg-surface-container-high px-3 py-2 rounded">
+                      <span className="text-xs font-bold">{selectedDistrict.name.includes('Bengaluru') ? 'Corporate Extortion' : 'Highway Robbery'}</span>
+                      <span className="text-xs font-mono font-bold text-yellow-500">15%</span>
+                    </li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <h4 className="font-bold text-sm text-on-surface mb-3 border-b border-outline-variant pb-1">Socio-Economic Factors</h4>
+                  {(() => {
+                    // Match with socioEconomicData or use fallback
+                    const matchedData = socioEconomicData.find(s => selectedDistrict.name.includes(s.district)) || {
+                      unemployment: 6.5, literacy: 75, poverty: 15
+                    };
+                    return (
+                      <div className="space-y-4">
+                        <div>
+                          <div className="flex justify-between text-xs mb-1">
+                            <span className="font-bold text-on-surface-variant">Unemployment Rate</span>
+                            <span className="font-mono font-bold">{matchedData.unemployment}%</span>
+                          </div>
+                          <div className="w-full bg-surface-container-highest rounded-full h-1.5">
+                            <div className="bg-error h-1.5 rounded-full" style={{ width: `${Math.min(matchedData.unemployment * 10, 100)}%` }}></div>
+                          </div>
+                        </div>
+                        <div>
+                          <div className="flex justify-between text-xs mb-1">
+                            <span className="font-bold text-on-surface-variant">Poverty Index</span>
+                            <span className="font-mono font-bold">{matchedData.poverty}</span>
+                          </div>
+                          <div className="w-full bg-surface-container-highest rounded-full h-1.5">
+                            <div className="bg-orange-500 h-1.5 rounded-full" style={{ width: `${Math.min(matchedData.poverty * 3, 100)}%` }}></div>
+                          </div>
+                        </div>
+                        <div>
+                          <div className="flex justify-between text-xs mb-1">
+                            <span className="font-bold text-on-surface-variant">Literacy Rate</span>
+                            <span className="font-mono font-bold">{matchedData.literacy}%</span>
+                          </div>
+                          <div className="w-full bg-surface-container-highest rounded-full h-1.5">
+                            <div className="bg-primary h-1.5 rounded-full" style={{ width: `${matchedData.literacy}%` }}></div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
+              
+              {/* Action buttons */}
+              <div className="pt-4 border-t border-outline-variant flex justify-end gap-3">
+                <button className="px-4 py-2 bg-surface-container-high hover:bg-surface-dim text-on-surface text-xs font-bold rounded-lg border border-outline-variant transition-colors flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[16px]">download</span> Export Report
+                </button>
+                <button className="px-4 py-2 bg-primary text-on-primary text-xs font-bold rounded-lg hover:bg-primary-container hover:text-on-primary-container transition-colors shadow-sm flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[16px]">policy</span> Issue Deployment Orders
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

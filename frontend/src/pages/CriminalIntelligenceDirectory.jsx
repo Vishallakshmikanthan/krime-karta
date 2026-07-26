@@ -57,8 +57,8 @@ export default function CriminalIntelligenceDirectory() {
       casesLinked: 16,
       primaryDistrict: "Sriramapura / North Bengaluru",
       background: "Operates massive money laundering networks, currency exchanges, and illegal real estate extortion rackets.",
-      status: "FINANCIAL SURVEILLANCE",
-      legalStatus: "Active rowdy sheet; under tight financial and movement surveillance by state police."
+      status: "FINANCIAL SURVEILLANCE (EOW)",
+      legalStatus: "Active rowdy sheet; under tight financial and movement surveillance by Economic Offences Wing (EOW)."
     },
     {
       id: 'CRIM-005',
@@ -70,8 +70,8 @@ export default function CriminalIntelligenceDirectory() {
       casesLinked: 15,
       primaryDistrict: "Tumakuru / Bengaluru Outer",
       background: "Head of organized highway robbery, inter-district dacoity, and contract extraction rings.",
-      status: "INTER-DISTRICT SURVEILLANCE",
-      legalStatus: "Regularly arrested and under strict surveillance by inter-district anti-rowdy squads."
+      status: "INTER-DISTRICT SURVEILLANCE (ARS)",
+      legalStatus: "Regularly arrested and under strict surveillance by inter-district Anti-Rowdy Squads (ARS)."
     },
     {
       id: 'CRIM-006',

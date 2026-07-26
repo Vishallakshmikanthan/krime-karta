@@ -5,13 +5,22 @@ import { Link } from 'react-router-dom';
 export default function Header({ title = 'Karnataka State Police Intelligence Platform' }) {
   const { selectedDistrict, setSelectedDistrict } = useAppStore();
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   const notifications = [
-    { id: 1, text: 'CRITICAL: High robbery risk predicted in Bengaluru Central Sector 4.', time: '2 mins ago', type: 'urgent' },
-    { id: 2, text: 'NetworkX Alert: Syndicate bridge node Rajan Varma active in Mysuru.', time: '14 mins ago', type: 'info' },
-    { id: 3, text: 'FIR 142/2024 evidence payload updated by Inspector Patil.', time: '1 hour ago', type: 'update' }
+    { id: 1, text: 'CRITICAL: High robbery risk predicted in Bengaluru Central Sector 4.', time: '2 mins ago', type: 'urgent', link: '/intel-reports' },
+    { id: 2, text: 'NetworkX Alert: Syndicate bridge node Rajan Varma active in Mysuru.', time: '14 mins ago', type: 'info', link: '/network-analysis' },
+    { id: 3, text: 'FIR 142/2024 evidence payload updated by Inspector Patil.', time: '1 hour ago', type: 'update', link: '/crime-records' }
   ];
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      // Simulate search routing (assuming a router structure exists)
+      window.location.href = `/crime-records?query=${encodeURIComponent(searchQuery)}`;
+    }
+  };
 
   return (
     <header className="bg-surface border-b border-outline-variant flex justify-between items-center w-full px-6 h-16 shrink-0 z-50 select-none">
@@ -42,7 +51,7 @@ export default function Header({ title = 'Karnataka State Police Intelligence Pl
         </div>
 
         {/* Global Search Bar */}
-        <div className="relative hidden lg:block">
+        <form onSubmit={handleSearch} className="relative hidden lg:block">
           <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">
             search
           </span>
@@ -53,7 +62,7 @@ export default function Header({ title = 'Karnataka State Police Intelligence Pl
             placeholder="Search FIR, Suspect..."
             className="bg-surface-container-lowest border border-outline-variant text-on-surface pl-9 pr-4 py-1.5 rounded-lg text-sm w-56 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
           />
-        </div>
+        </form>
 
         {/* Notifications Dropdown */}
         <div className="relative">
@@ -73,10 +82,10 @@ export default function Header({ title = 'Karnataka State Police Intelligence Pl
               </div>
               <div className="divide-y divide-outline-variant max-h-64 overflow-y-auto">
                 {notifications.map((n) => (
-                  <div key={n.id} className="p-3 hover:bg-surface-container-low transition-colors">
+                  <Link key={n.id} to={n.link} onClick={() => setShowNotifications(false)} className="block p-3 hover:bg-surface-container-low transition-colors">
                     <p className="text-sm text-on-surface font-medium">{n.text}</p>
                     <span className="text-xs text-on-surface-variant mt-1 block">{n.time}</span>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>
@@ -84,14 +93,31 @@ export default function Header({ title = 'Karnataka State Police Intelligence Pl
         </div>
 
         {/* User Profile Badge */}
-        <div className="flex items-center gap-2 pl-4 border-l border-outline-variant">
-          <div className="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-sm">
-            SP
-          </div>
-          <div className="hidden sm:block">
-            <p className="text-sm font-bold text-on-surface">DCP Ananya Rao</p>
-            <p className="text-[10px] text-on-surface-variant uppercase font-semibold">Superintendent</p>
-          </div>
+        <div className="relative flex items-center gap-2 pl-4 border-l border-outline-variant">
+          <button 
+            onClick={() => setShowProfileMenu(!showProfileMenu)}
+            className="flex items-center gap-2 text-left focus:outline-none hover:bg-surface-container-lowest p-1 rounded-lg transition-colors"
+          >
+            <div className="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-sm">
+              SP
+            </div>
+            <div className="hidden sm:block">
+              <p className="text-sm font-bold text-on-surface">DCP Ananya Rao</p>
+              <p className="text-[10px] text-on-surface-variant uppercase font-semibold">Superintendent</p>
+            </div>
+            <span className="material-symbols-outlined text-on-surface-variant text-[18px]">
+              expand_more
+            </span>
+          </button>
+
+          {showProfileMenu && (
+            <div className="absolute right-0 top-12 w-48 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-xl z-50 overflow-hidden py-1">
+              <Link to="/profile" className="block px-4 py-2 text-sm text-on-surface hover:bg-surface-container-low">Profile Settings</Link>
+              <Link to="/preferences" className="block px-4 py-2 text-sm text-on-surface hover:bg-surface-container-low">UI Preferences</Link>
+              <div className="border-t border-outline-variant my-1"></div>
+              <button className="block w-full text-left px-4 py-2 text-sm text-error hover:bg-error-container">Secure Logout</button>
+            </div>
+          )}
         </div>
       </div>
     </header>
