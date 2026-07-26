@@ -1,96 +1,49 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/layout/Sidebar';
 import Header from '../components/layout/Header';
+import { fetchCrimeRecords, createCrimeRecord } from '../services/apiClient';
 
 export default function NationalCrimeRecordsDatabase() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('ALL');
   
-  const [records] = useState([
-    {
-      id: 'FIR-2026-00101',
-      title: 'Central Bengaluru Supari & Extortion Ring',
-      date: '2026-06-12',
-      status: 'ACTIVE_INVESTIGATION',
-      category: 'Murder & Extortion (Sec 103 BNS)',
-      district: 'Bengaluru City (Central)',
-      primarySuspect: 'Wilson Garden Naga',
-      assignedTo: 'CCB Anti-Rowdy Squad'
-    },
-    {
-      id: 'FIR-2026-00102',
-      title: 'Western Subdivision Armed Land Settlement',
-      date: '2026-05-28',
-      status: 'ACTIVE_INVESTIGATION',
-      category: 'Armed Extortion & Arms Act',
-      district: 'West Bengaluru',
-      primarySuspect: 'Cycle Ravi',
-      assignedTo: 'Insp. Gowda (CCB)'
-    },
-    {
-      id: 'FIR-2026-00103',
-      title: 'South Bengaluru Meter-Interest Extortion',
-      date: '2026-06-04',
-      status: 'PREVENTIVE_BOND_EXECUTED',
-      category: 'Micro-Finance Extortion (BNSS 129)',
-      district: 'South Bengaluru',
-      primarySuspect: 'Double Meter Mohan',
-      assignedTo: 'Sub-Divisional Police Officer'
-    },
-    {
-      id: 'FIR-2026-00104',
-      title: 'Sriramapura Money Laundering & Currency Exchange',
-      date: '2026-05-14',
-      status: 'ARREST_WARRANT_ISSUED',
-      category: 'Hawala & Money Laundering',
-      district: 'Sriramapura / North Bengaluru',
-      primarySuspect: 'Bomb Naga (Nagaraj)',
-      assignedTo: 'State Crime Records Bureau'
-    },
-    {
-      id: 'FIR-2026-00105',
-      title: 'NH-48 Tumakuru Highway Robbery Dacoity',
-      date: '2026-06-18',
-      status: 'ACTIVE_INVESTIGATION',
-      category: 'Highway Dacoity (Sec 310 BNS)',
-      district: 'Tumakuru / Bengaluru Outer',
-      primarySuspect: 'Kunigal Giri',
-      assignedTo: 'Inter-District Highway Patrol'
-    },
-    {
-      id: 'FIR-2026-00106',
-      title: 'South Bengaluru Local Turf Assault & Intimidation',
-      date: '2026-06-01',
-      status: 'GOONDA_ACT_PROCEEDINGS',
-      category: 'Public Intimidation & Assault',
-      district: 'South Bengaluru',
-      primarySuspect: 'Slum Bharatha',
-      assignedTo: 'Precinct Station Inspector'
-    },
-    {
-      id: 'FIR-2026-00107',
-      title: 'North Bengaluru Unlicensed Firearms Seizure',
-      date: '2026-05-30',
-      status: 'ACTIVE_INVESTIGATION',
-      category: 'Arms Act 1959 Violation',
-      district: 'North Bengaluru',
-      primarySuspect: 'Welding Kumar',
-      assignedTo: 'Special Weapons Squad'
-    },
-    {
-      id: 'FIR-2026-00108',
-      title: 'Electronic City Industrial Land Grabbing & Sand Cartel',
-      date: '2026-06-22',
-      status: 'EXTERNMENT_ORDER_SERVED',
-      category: 'Real Estate & MMDR Act',
-      district: 'Electronic City / Bengaluru South',
-      primarySuspect: 'Hebbagodi Satisha',
-      assignedTo: 'Deputy Commissioner of Police'
-    }
-  ]);
+  const [records, setRecords] = useState([]);
+  
+  useEffect(() => {
+    fetchCrimeRecords().then(data => {
+      if (data && data.length > 0) {
+        setRecords(data);
+      }
+    });
+  }, []);
 
   const [selectedFIR, setSelectedFIR] = useState(null);
   const [showNewFIRModal, setShowNewFIRModal] = useState(false);
+  const [newFIRTitle, setNewFIRTitle] = useState('');
+  const [newFIRCategory, setNewFIRCategory] = useState('Murder & Extortion (Sec 103 BNS)');
+  const [newFIRDistrict, setNewFIRDistrict] = useState('Bengaluru City (Central)');
+
+  const handleSubmitNewFIR = async () => {
+    const newRecord = {
+      id: `FIR-2026-${Math.floor(Math.random() * 90000) + 10000}`,
+      title: newFIRTitle,
+      date: new Date().toISOString().split('T')[0],
+      status: 'ACTIVE_INVESTIGATION',
+      category: newFIRCategory,
+      district: newFIRDistrict,
+      primarySuspect: 'Unknown',
+      assignedTo: 'Assigned Pending'
+    };
+    
+    try {
+      await createCrimeRecord(newRecord);
+      setRecords(prev => [...prev, newRecord]);
+      setShowNewFIRModal(false);
+      setNewFIRTitle('');
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const filteredRecords = records.filter(r => {
     const matchesSearch = r.title.toLowerCase().includes(searchQuery.toLowerCase()) || r.id.toLowerCase().includes(searchQuery.toLowerCase()) || r.primarySuspect.toLowerCase().includes(searchQuery.toLowerCase());
@@ -244,12 +197,12 @@ export default function NationalCrimeRecordsDatabase() {
             <div className="space-y-4 text-sm">
               <div>
                 <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Case Title</label>
-                <input type="text" className="w-full bg-surface border border-outline-variant rounded-lg px-3 py-2 text-on-surface focus:outline-none focus:ring-1 focus:ring-primary" placeholder="Enter case title..." />
+                <input type="text" value={newFIRTitle} onChange={(e) => setNewFIRTitle(e.target.value)} className="w-full bg-surface border border-outline-variant rounded-lg px-3 py-2 text-on-surface focus:outline-none focus:ring-1 focus:ring-primary" placeholder="Enter case title..." />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Category</label>
-                  <select className="w-full bg-surface border border-outline-variant rounded-lg px-3 py-2 text-on-surface focus:outline-none focus:ring-1 focus:ring-primary">
+                  <select value={newFIRCategory} onChange={(e) => setNewFIRCategory(e.target.value)} className="w-full bg-surface border border-outline-variant rounded-lg px-3 py-2 text-on-surface focus:outline-none focus:ring-1 focus:ring-primary">
                     <option>Murder & Extortion (Sec 103 BNS)</option>
                     <option>Armed Extortion & Arms Act</option>
                     <option>Highway Dacoity (Sec 310 BNS)</option>
@@ -259,7 +212,7 @@ export default function NationalCrimeRecordsDatabase() {
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">District</label>
-                  <select className="w-full bg-surface border border-outline-variant rounded-lg px-3 py-2 text-on-surface focus:outline-none focus:ring-1 focus:ring-primary">
+                  <select value={newFIRDistrict} onChange={(e) => setNewFIRDistrict(e.target.value)} className="w-full bg-surface border border-outline-variant rounded-lg px-3 py-2 text-on-surface focus:outline-none focus:ring-1 focus:ring-primary">
                     <option>Bengaluru City (Central)</option>
                     <option>West Bengaluru</option>
                     <option>Tumakuru District</option>
@@ -273,7 +226,7 @@ export default function NationalCrimeRecordsDatabase() {
               <button onClick={() => setShowNewFIRModal(false)} className="px-4 py-2 bg-surface-container-high text-on-surface font-bold rounded-lg text-sm border border-outline-variant">
                 Cancel
               </button>
-              <button onClick={() => setShowNewFIRModal(false)} className="px-4 py-2 bg-primary text-on-primary font-bold rounded-lg text-sm shadow-sm">
+              <button onClick={handleSubmitNewFIR} className="px-4 py-2 bg-primary text-on-primary font-bold rounded-lg text-sm shadow-sm">
                 Submit CCTNS Record
               </button>
             </div>

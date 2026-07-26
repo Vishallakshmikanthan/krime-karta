@@ -96,3 +96,23 @@ export async function fetchBriefing(district: string): Promise<ExecutiveBriefing
     };
   }
 }
+
+export async function fetchCrimeRecords(): Promise<any[]> {
+  try {
+    const res = await fetch(`${API_BASE}/crime-records`);
+    if (!res.ok) throw new Error('Failed to fetch crime records');
+    return await res.json();
+  } catch (_err) {
+    return [];
+  }
+}
+
+export async function createCrimeRecord(record: any): Promise<any> {
+  const res = await fetch(`${API_BASE}/crime-records`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(record)
+  });
+  if (!res.ok) throw new Error('Failed to create crime record');
+  return await res.json();
+}

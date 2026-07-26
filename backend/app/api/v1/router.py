@@ -123,3 +123,35 @@ def get_crimes_geojson(district: str = "Bengaluru Central"):
         ))
         
     return GeoJSONCollection(features=features)
+
+MOCK_CRIME_RECORDS = [
+    {
+      "id": "FIR-2026-00101",
+      "title": "Central Bengaluru Supari & Extortion Ring",
+      "date": "2026-06-12",
+      "status": "ACTIVE_INVESTIGATION",
+      "category": "Murder & Extortion (Sec 103 BNS)",
+      "district": "Bengaluru City (Central)",
+      "primarySuspect": "Wilson Garden Naga",
+      "assignedTo": "CCB Anti-Rowdy Squad"
+    },
+    {
+      "id": "FIR-2026-00102",
+      "title": "Western Subdivision Armed Land Settlement",
+      "date": "2026-05-28",
+      "status": "ACTIVE_INVESTIGATION",
+      "category": "Armed Extortion & Arms Act",
+      "district": "West Bengaluru",
+      "primarySuspect": "Cycle Ravi",
+      "assignedTo": "Insp. Gowda (CCB)"
+    }
+]
+
+@api_router.get("/crime-records")
+def get_crime_records():
+    return MOCK_CRIME_RECORDS
+
+@api_router.post("/crime-records")
+def create_crime_record(record: dict):
+    MOCK_CRIME_RECORDS.append(record)
+    return {"message": "Record created successfully", "record": record}
