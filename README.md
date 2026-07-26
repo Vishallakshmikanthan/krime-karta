@@ -142,9 +142,9 @@ Here is a visual walkthrough of the KrimeKartā platform based on our prototype 
 **Explanation**: To build trust with law enforcement, every AI recommendation includes transparent reasoning via SHAP values. It tells the officer *why* a location is a hotspot (e.g., "Theft increased 34% + Weekend Activity + Near transport hub").
 
 ### 5. Criminal Network & Link Analysis
-**File**: `prototype_screenshots/Screenshot 2026-07-26 120456.png`
+**File**: `prototype_screenshots/image.png`
 <br>
-![Network Analysis](prototype_screenshots/Screenshot%202026-07-26%20120456.png)
+![Network Analysis](prototype_screenshots/image.png)
 **Explanation**: Graph visualizations of repeat offenders, syndicates, and co-accused relationships. This allows investigators to trace central figures in organized crime and track repeat offender associations.
 
 ### 6. Automated Intelligence Briefs (Powered by Nemotron 3 Ultra 550b)
@@ -153,31 +153,25 @@ Here is a visual walkthrough of the KrimeKartā platform based on our prototype 
 ![Intelligence Briefs](prototype_screenshots/Screenshot%202026-07-26%20120503.png)
 **Explanation**: Our integration of the Nemotron 3 Ultra 550b model automatically reads statistical data and produces comprehensive, human-readable executive summaries, threat matrices, and daily briefings.
 
-### 7. District-Level Drilldowns
-**File**: `prototype_screenshots/Screenshot 2026-07-26 120525.png`
-<br>
-![District Drilldown](prototype_screenshots/Screenshot%202026-07-26%20120525.png)
-**Explanation**: Granular insights into specific jurisdictions. Enables Circle Inspectors and Superintendents to monitor exact crime distributions within their respective districts.
-
-### 8. Spatio-Temporal Crime Correlation
+### 7. Spatio-Temporal Crime Correlation
 **File**: `prototype_screenshots/Screenshot 2026-07-26 120535.png`
 <br>
 ![Spatio-Temporal Analysis](prototype_screenshots/Screenshot%202026-07-26%20120535.png)
 **Explanation**: Identifying when and where crimes happen. This module visualizes peak crime hours, day-of-week trends, and helps optimize shift-based resource allocation.
 
-### 9. Trend Alerts & Anomaly Detection
+### 8. Trend Alerts & Anomaly Detection
 **File**: `prototype_screenshots/Screenshot 2026-07-26 120544.png`
 <br>
 ![Anomaly Detection](prototype_screenshots/Screenshot%202026-07-26%20120544.png)
 **Explanation**: Powered by Isolation Forest algorithms, this section highlights unusual spikes in specific crimes (e.g., sudden surge in cyber frauds or highway accidents), triggering immediate alerts to administrators.
 
-### 10. Data Ingestion & Incident Management
+### 9. Data Ingestion & Incident Management
 **File**: `prototype_screenshots/Screenshot 2026-07-26 120551.png`
 <br>
 ![Data Management](prototype_screenshots/Screenshot%202026-07-26%20120551.png)
 **Explanation**: The portal for authorized personnel to input, validate, and manage FIR data, ensuring the system continually learns from the latest records.
 
-### 11. Security & Role-Based Access Control (RBAC)
+### 10. Security & Role-Based Access Control (RBAC)
 **File**: `prototype_screenshots/Screenshot 2026-07-26 120601.png`
 <br>
 ![Security Access](prototype_screenshots/Screenshot%202026-07-26%20120601.png)
