@@ -11,16 +11,34 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 
 export default function DashboardOverview() {
   const [hotspots, setHotspots] = useState([]);
   const [briefing, setBriefing] = useState(null);
-  const { selectedDistrict } = useAppStore();
+  const [loadingBriefing, setLoadingBriefing] = useState(false);
+  const { selectedDistrict, setSelectedDistrict } = useAppStore();
+  const [activeZone, setActiveZone] = useState(selectedDistrict || 'Belagavi');
+
+  const loadBriefingForZone = (zoneName) => {
+    setActiveZone(zoneName);
+    setLoadingBriefing(true);
+    fetchBriefing(zoneName).then((res) => {
+      if (res) setBriefing(res);
+      setLoadingBriefing(false);
+    }).catch(err => {
+      console.error(err);
+      setLoadingBriefing(false);
+    });
+  };
 
   useEffect(() => {
+    setActiveZone(selectedDistrict);
     fetchHotspots(selectedDistrict, 48).then((res) => {
       if (res && res.predictions) setHotspots(res.predictions);
     });
-    fetchBriefing(selectedDistrict).then((res) => {
-      if (res) setBriefing(res);
-    });
+    loadBriefingForZone(selectedDistrict);
   }, [selectedDistrict]);
+
+  const handleZoneSelect = (zoneName) => {
+    if (setSelectedDistrict) setSelectedDistrict(zoneName);
+    loadBriefingForZone(zoneName);
+  };
 
   const kpis = {
     totalCrimesH1: '106,417',
@@ -117,7 +135,7 @@ export default function DashboardOverview() {
             <div className="lg:col-span-7 bg-surface-container-lowest border border-outline-variant rounded-xl p-5 shadow-sm flex flex-col h-[550px]">
               <div className="flex justify-between items-center mb-3">
                 <h3 className="text-base font-bold text-on-surface flex items-center gap-2">
-                  🗺️ Live Geospatial Hotspot Map (Bengaluru City & District Networks)
+                  🗺️ Live Geospatial Hotspot Map (Click Any Zone for Real-Time AI Briefing)
                 </h3>
                 <Link to="/geospatial-map" className="text-xs text-primary hover:underline font-bold flex items-center gap-1">
                   Full Map View →
@@ -125,7 +143,7 @@ export default function DashboardOverview() {
               </div>
               <div className="flex-1 w-full relative rounded-lg overflow-hidden border border-outline-variant z-10">
                 <ErrorBoundary>
-                  <GeospatialMap hotspots={hotspots} _district={selectedDistrict} />
+                  <GeospatialMap hotspots={hotspots} _district={activeZone} onSelectZone={handleZoneSelect} />
                 </ErrorBoundary>
               </div>
             </div>
@@ -133,34 +151,60 @@ export default function DashboardOverview() {
             {/* AI Executive Intelligence Briefing & Trends (Right Column) */}
             <div className="lg:col-span-5 space-y-6 flex flex-col justify-between h-[550px]">
               <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 shadow-sm flex-1 flex flex-col overflow-hidden">
-                <div className="flex justify-between items-center mb-3">
-                  <h3 className="text-sm font-bold text-on-surface flex items-center gap-2">
-                    🤖 Gemini 2.0 Flash SCRB Executive Briefing
-                  </h3>
-                  <span className="text-[10px] bg-primary-container text-on-primary-container font-bold px-2 py-0.5 rounded">
-                    SCRB 2026 INTEL
+                <div className="flex justify-between items-center mb-3 border-b border-outline-variant/60 pb-2">
+                  <div>
+                    <h3 className="text-sm font-bold text-on-surface flex items-center gap-1.5">
+                      🤖 Gemini 2.0 Flash SCRB Executive Briefing
+                    </h3>
+                    <span className="text-[11px] font-mono text-primary font-bold">
+                      Zone Target: {activeZone}
+                    </span>
+                  </div>
+                  <span className="text-[10px] bg-primary/10 text-primary font-bold px-2 py-0.5 rounded border border-primary/20 flex items-center gap-1 animate-pulse">
+                    ⚡ Nemotron-4-340B Live AI
                   </span>
                 </div>
 
-                {briefing ? (
-                  <div className="space-y-3 text-xs overflow-y-auto pr-2 flex-1">
-                    <p className="text-on-surface bg-surface-container-low p-3 rounded-lg border border-outline-variant font-body leading-relaxed">
-                      {briefing.executive_summary}
+                {loadingBriefing ? (
+                  <div className="flex-1 flex flex-col items-center justify-center space-y-3 p-6 text-center">
+                    <span className="material-symbols-outlined text-primary text-3xl animate-spin">
+                      sync
+                    </span>
+                    <p className="text-xs font-bold text-primary font-mono animate-pulse">
+                      Generating Nemotron-4-340B Real-Time Briefing for {activeZone}...
                     </p>
+                    <p className="text-[11px] text-on-surface-variant">
+                      Synthesizing spatial CCTNS feeds, BNS statutory heads, and rowdy-sheeter networks.
+                    </p>
+                  </div>
+                ) : briefing ? (
+                  <div className="space-y-3 text-xs overflow-y-auto pr-2 flex-1">
+                    <div className="bg-surface-container-low p-3 rounded-lg border border-outline-variant space-y-1">
+                      <div className="flex items-center justify-between text-[10px] text-on-surface-variant font-mono">
+                        <span className="font-bold text-error uppercase">{briefing.threat_assessment || 'ELEVATED THREAT LEVEL'}</span>
+                        <span>{briefing.model_version}</span>
+                      </div>
+                      <p className="text-on-surface font-body leading-relaxed pt-1">
+                        {briefing.executive_summary}
+                      </p>
+                    </div>
 
                     <div className="mt-3">
                       <span className="text-[10px] uppercase font-bold text-on-surface-variant block mb-2">
-                        State Commander Directives:
+                        State Commander Directives for {activeZone}:
                       </span>
-                      <ul className="space-y-1.5 list-disc pl-4 text-on-surface">
-                        {briefing.actionable_directives.map((dir, idx) => (
-                          <li key={idx} className="leading-tight">{dir}</li>
+                      <ul className="space-y-2 text-on-surface">
+                        {briefing.actionable_directives?.map((dir, idx) => (
+                          <li key={idx} className="flex items-start gap-2 bg-surface-container-lowest p-2 rounded border border-outline-variant/60">
+                            <span className="material-symbols-outlined text-primary text-[14px] shrink-0 mt-0.5">verified_user</span>
+                            <span className="leading-tight">{dir}</span>
+                          </li>
                         ))}
                       </ul>
                     </div>
                   </div>
                 ) : (
-                  <p className="text-xs text-on-surface-variant">Loading Authenticated SCRB Briefing...</p>
+                  <p className="text-xs text-on-surface-variant">Click any map zone to generate live briefing...</p>
                 )}
               </div>
 

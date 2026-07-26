@@ -155,7 +155,7 @@ function MapController({ district }) {
   return null;
 }
 
-export default function GeospatialMap({ hotspots = [], _district = 'Bengaluru Central', onSelectCell }) {
+export default function GeospatialMap({ hotspots = [], _district = 'Bengaluru Central', onSelectCell, onSelectZone }) {
   const center = [15.3173, 75.7139]; 
   const karnatakaBounds = [
     [11.5, 74.0],
@@ -244,6 +244,11 @@ export default function GeospatialMap({ hotspots = [], _district = 'Bengaluru Ce
             <Polygon
               key={`zone-${idx}`}
               positions={zone.polygon}
+              eventHandlers={{
+                click: () => {
+                  if (onSelectZone) onSelectZone(zone.name);
+                }
+              }}
               pathOptions={{
                 color: zone.color,
                 fillColor: zone.color,

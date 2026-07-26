@@ -1,6 +1,6 @@
 import { HotspotPoint, NetworkGraphData, ExecutiveBriefing } from '../types';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+const API_BASE = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api/v1';
 
 export async function fetchHotspots(district: string, timeWindow: number): Promise<{ predictions: HotspotPoint[]; high_risk_hotspots: number }> {
   try {
@@ -97,11 +97,15 @@ export async function fetchBriefing(district: string): Promise<ExecutiveBriefing
   }
 }
 
-export async function fetchCrimeRecords(): Promise<any[]> {
+export async function fetchCrimeRecords(district?: string): Promise<any[]> {
   try {
-    const res = await fetch(`${API_BASE}/crime-records`);
+    const url = district 
+      ? `${API_BASE}/crime-records?district=${encodeURIComponent(district)}&limit=100`
+      : `${API_BASE}/crime-records?limit=100`;
+    const res = await fetch(url);
     if (!res.ok) throw new Error('Failed to fetch crime records');
-    return await res.json();
+    const data = await res.json();
+    return Array.isArray(data) ? data : (data.items || []);
   } catch (_err) {
     return [];
   }

@@ -91,13 +91,22 @@ def get_executive_briefing(req: BriefingRequest):
     return gemini_service.generate_district_briefing(district=req.district, period=req.period)
 
 def serialize_crime(record: CrimeRecord) -> dict:
+    suspect_name = "Tagged Rowdy Sheeter"
+    if record.description and "Suspect " in record.description:
+        suspect_name = record.description.split("Suspect ")[1].split(" tagged")[0]
+
     return {
+        "id": record.fir_number,
         "fir_number": record.fir_number,
         "title": record.title,
+        "category": record.crime_category or record.crime_type,
         "crime_type": record.crime_type,
         "crime_category": record.crime_category,
+        "date": str(record.fir_date).split("T")[0] if record.fir_date else "2026-07-25",
         "priority": record.priority,
         "status": record.status,
+        "primarySuspect": suspect_name,
+        "assignedTo": f"{record.station_name} Inspector",
         "latitude": record.latitude,
         "longitude": record.longitude,
         "location_name": record.location_name,

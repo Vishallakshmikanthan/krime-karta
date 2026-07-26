@@ -2,20 +2,21 @@ import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/layout/Sidebar';
 import Header from '../components/layout/Header';
 import { fetchCrimeRecords, createCrimeRecord } from '../services/apiClient';
+import { useAppStore } from '../store/useStore';
 
 export default function NationalCrimeRecordsDatabase() {
+  const { selectedDistrict } = useAppStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('ALL');
   
   const [records, setRecords] = useState([]);
   
   useEffect(() => {
-    fetchCrimeRecords().then(data => {
-      if (data && data.length > 0) {
-        setRecords(data);
-      }
+    fetchCrimeRecords(selectedDistrict).then(data => {
+      const items = Array.isArray(data) ? data : (data?.items || []);
+      setRecords(items);
     });
-  }, []);
+  }, [selectedDistrict]);
 
   const [selectedFIR, setSelectedFIR] = useState(null);
   const [showNewFIRModal, setShowNewFIRModal] = useState(false);
