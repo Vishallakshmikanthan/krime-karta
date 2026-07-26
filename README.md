@@ -553,6 +553,145 @@ krime-karta/
 
 ---
 
+## 🕵️ The Rowdy Sheeter Story — Building the Criminal Intelligence Network
+
+> This is perhaps the most fascinating and personally rewarding part of the entire project. Building the criminal network graph was not a technical exercise — it was a deep-dive into the criminal sociology of Karnataka.
+
+---
+
+### 📂 The Datasets That Powered Everything
+
+Before we could model anything, we needed data. Real data. We studied and cross-referenced three primary sources:
+
+| Dataset | Source | What We Extracted |
+| :--- | :--- | :--- |
+| **Karnataka Crime Data 2025** | [OpenCity India](https://data.opencity.in/dataset/karnataka-crime-data-2025) | District-wise IPC offence counts, category breakdowns, year-on-year trends |
+| **KSP Monthly Crime Review (2025–2026)** | [Karnataka State Police Official](https://ksp.karnataka.gov.in/new-page/Monthly%20Crime%20Review/en) | Monthly SCRB reports: crimes by district, arrests, conviction data, special drive results |
+| **Karnataka Crime Review 2021–2024** | [Kaggle — Aayush Rokade](https://www.kaggle.com/datasets/aayushrokade/crime-review-of-karnataka-2021-2024?resource=download) | 4-year longitudinal dataset: trend analysis, seasonal patterns, district volatility scores |
+
+These three datasets gave us a **multi-dimensional, multi-year view** of Karnataka's crime landscape. Cross-referencing them revealed patterns that no single source could show alone — for example, matching the Kaggle 2021–2024 dataset with the KSP 2025 monthly reviews allowed us to spot which districts had **sustained high crime** (structural issues) versus **sudden spikes** (incident-driven surges).
+
+---
+
+### 🗞️ Going Beyond Data — Studying the News
+
+Raw crime statistics tell you *what* happened. News archives tell you *who*, *how*, and *why*.
+
+We extensively studied Karnataka news archives, police press releases, and court records to understand the **real ecosystem of organized crime** in the state. Without naming or defaming anyone, the patterns we found were striking:
+
+**1. The Bengaluru Rowdy Sheeter System**
+Karnataka Police maintains official **Rowdy Sheeters (RS)** — a registry of history-sheeters with documented criminal involvement. Bengaluru's jurisdictions like Shivajinagar, Cottonpet, Ulsoor, and Kalasipalyam have historically dense RS populations. These are not anonymous criminals — they are tracked individuals with documented associates, known offences, and territorial boundaries.
+
+What we discovered: many RS-registered individuals operate within **interconnected webs** — the same names appear as co-accused, witnesses, or accomplices across multiple FIRs across different years and different stations.
+
+**2. Syndicate Structures We Studied**
+- **North Karnataka Smuggling Corridors**: NDPS (narcotic drug) cases from Belagavi, Dharwad, and Vijayapura districts showed clear logistical chains — mules, handlers, and financiers operating in coordinated layers. News coverage from 2022–2024 documented major busts that revealed these chains.
+- **Bengaluru Extortion Networks**: Several news cycles around 2023–2024 documented gang-related extortion cases in the construction and real estate sectors in Bengaluru East. The pattern: intimidation escalating to violence, linked to specific territorial gangs.
+- **Coastal Karnataka Smuggling (Dakshina Kannada/Udupi)**: Marine route smuggling of contraband, documented in both police press releases and investigative journalism.
+- **Highway Dacoity Circuits (NH-44 corridor)**: Repeated armed robbery patterns near Chitradurga and Tumkur, some cases linked to the same set of operatives appearing across FIRs.
+
+**3. The Repeat Offender Phenomenon**
+Studying the Kaggle dataset longitudinally, we noticed that certain IPC sections — 307 (Attempt to Murder), 302 (Murder), 392 (Robbery), 395 (Dacoity) — had disproportionately high recidivism. The same *types* of crimes repeatedly involved history-sheeters rather than first-time offenders.
+
+This insight directly shaped how we designed the network graph: **nodes with high degree (many connections) represent the central figures** — the individuals appearing across the most FIRs as co-accused.
+
+---
+
+### 🕸️ Building the Criminal Network Graph — The Experience
+
+When we started building the criminal relationship visualizer, we thought it would be a straightforward graph rendering exercise. It turned out to be one of the most intellectually rich parts of the entire project.
+
+**The core idea**: If two people appear in the same FIR — either as co-accused, as suspects in related cases, or as members of identified gangs — they have a **relationship edge** in the network. The weight of the edge increases with the number of shared cases.
+
+**How we modeled it:**
+
+```
+Node = Individual criminal / suspect / person of interest
+Edge = Shared FIR, shared arrest, or documented association
+Edge Weight = Number of shared incidents (stronger link = thicker edge)
+Node Size = Degree centrality (more connections = more central figure)
+Node Colour = Primary offence category (NDPS = red, Property = orange, Violence = dark blue)
+```
+
+**What the graph revealed when we first rendered it:**
+
+We were genuinely surprised. Even with our synthesized dataset (modeled on real Karnataka patterns), the graph produced **clear hub-and-spoke structures** — a small number of high-degree nodes connected to large clusters of low-degree nodes. This is a known property of real criminal networks and our data — derived from real statistical patterns — reproduced it organically.
+
+The visualization showed:
+- **Central hubs**: 3–4 individuals with connections to 15+ other nodes — these represent the "organizers" of criminal activities
+- **Satellite clusters**: Groups of 5–8 individuals connected primarily through one hub — these represent operatives or associates
+- **Bridge nodes**: Individuals connecting two otherwise separate clusters — these are the most operationally dangerous, as they represent the links between otherwise isolated criminal ecosystems
+- **Isolated dyads**: Two-person partnerships operating independently — often one-time co-accused
+
+**The "Shadow" Syndicate:**
+In our seed data, we modeled a fictitious organized group called `'Shadow'` (inspired by real Karnataka NDPS case narratives we studied). When rendered on the network graph, the Shadow-linked nodes formed a visually distinct cluster with high internal edge density — exactly how a real investigator would spot an organized syndicate in link analysis.
+
+---
+
+### 🧮 The Technical Implementation of the Network
+
+**Library choices:**
+- **`graphology`** — A powerful JavaScript graph library for creating, manipulating, and analyzing graph data structures. We used it to store and process the network.
+- **`graphology-layout-forceatlas2`** — A force-directed layout algorithm. ForceAtlas2 is designed specifically for social network graphs and naturally separates clusters while pulling connected nodes together. This made the syndicates visually obvious without any manual positioning.
+- **`sigma.js`** — A high-performance WebGL renderer for graph visualization. It handles thousands of nodes without frame rate drops.
+
+**The data pipeline:**
+```
+backend /api/v1/network/graph
+  └── Returns: { nodes: [...], edges: [...] }
+       ├── nodes: [{ id, label, category, degree, lat, lng }]
+       └── edges: [{ source, target, weight, sharedCases }]
+
+frontend: NetworkGraph component
+  ├── Initializes graphology Graph instance
+  ├── Adds nodes and edges from API response
+  ├── Runs ForceAtlas2 for 150 iterations (layout stabilization)
+  └── Renders via Sigma.js WebGL canvas
+```
+
+**Interactivity we built:**
+- Hover a node → highlight all direct neighbours, dim others
+- Click a node → show sidebar with criminal profile: offences, districts, co-accused list, risk score
+- Filter by offence category → isolate NDPS network, or Violence network, or Property crime network
+- Search by name → camera animates to the node in the graph
+
+---
+
+### 🎯 What This Meant for Law Enforcement
+
+The network graph is not just a visualization — it is an **intelligence tool**. When a field officer identifies a suspect, they can instantly see:
+- Who else is in that person's network
+- Which districts those associates operate in
+- Whether any known associate has a pending warrant
+- The "reach" score of that suspect (how many criminal relationships they have)
+
+This is exactly the kind of link analysis that specialized CID cells do manually over days. KrimeKartā attempts to surface it in seconds.
+
+---
+
+### 📊 What Each Dataset Uniquely Contributed
+
+**OpenCity Karnataka Crime Data 2025:**
+- Gave us current-year (2025) baselines for crime counts per district and IPC section
+- Used to calibrate our auto-seed generator so district-level crime volumes are proportionally realistic
+- Helped us understand which IPC sections dominate Karnataka's crime profile (theft, hurt, cheating, NDPS)
+
+**KSP Official Monthly Crime Reviews:**
+- These government publications were invaluable for understanding *how Karnataka Police themselves analyze crime*
+- We adopted their own categorization language: "Active Investigation", "Under Review", "Chargesheeted", "Convicted"
+- The monthly trend data showed us seasonal spikes: summer (March–May) sees property crime uptick; festival season (October) sees heightened vigilance requirements
+- Special drive results (Operation Summer Shield, Anti-Rowdy drives) showed which crime types police were actively targeting — we used this to add "enforcement context" to our dashboard
+
+**Kaggle 2021–2024 Dataset:**
+- The 4-year longitudinal view was crucial for building our **trend analysis engine**
+- We could compute year-on-year change rates for each crime category: which crimes were rising, which were falling
+- Cyclical patterns (certain crimes peaking in the same months across all 4 years) were encoded into our temporal distribution logic
+- District volatility scores: we computed the coefficient of variation in monthly crime counts for each district — high variance = volatile district, low variance = stable district
+
+Cross-referencing all three sources produced the most realistic synthetic crime dataset we could build without access to actual FIR records.
+
+---
+
 ## 🙏 Acknowledgements
 
 - **Karnataka State Police** — for organizing Datathon 2026 and creating a platform for technologists to contribute to public safety
