@@ -24,6 +24,33 @@
 
 ---
 
+## 🚀 Live Deployment — Zoho Catalyst
+
+KrimeKartā is fully deployed on **[Zoho Catalyst](https://catalyst.zoho.com/)** — Zoho's cloud serverless platform — using **AppSail** (for the Node.js backend) and **Web Client Hosting** (for the React frontend).
+
+| Component | Live URL |
+| :--- | :--- |
+| 🌐 **Web App (Frontend)** | [https://krime-karta-60080181311.development.catalystserverless.in/app/index.html](https://krime-karta-60080181311.development.catalystserverless.in/app/index.html) |
+| ⚙️ **Backend API (AppSail)** | [https://krimekarta-backend-50044361476.development.catalystappsail.in](https://krimekarta-backend-50044361476.development.catalystappsail.in) |
+| 💓 **Health Check** | [/health](https://krimekarta-backend-50044361476.development.catalystappsail.in/health) |
+
+### 🔐 Demo Login Credentials
+| Field | Value |
+| :--- | :--- |
+| **Service ID** | `KA-P-12345` |
+| **Password** | `password` |
+| **OTP (2FA)** | `123456` |
+
+### ☁️ Deployment Architecture on Zoho Catalyst
+- **Frontend** → Deployed as a **Web Client** (static hosting of the Vite/React production build)
+- **Backend** → Deployed as an **AppSail** service running **Node.js 24** with auto-install on startup
+- **Environment** → Zoho Catalyst **Development** environment (`krime-karta-60080181311`)
+- **Region** → Asia/Kolkata
+
+> ⚠️ This is the **Development** environment. For production promotion, use "Deploy to Production" in the Catalyst Console.
+
+---
+
 ## 📖 Executive Summary
 KrimeKartā is an AI-driven Crime Intelligence Platform designed to assist law enforcement agencies in making faster, smarter, and data-driven operational decisions. Rather than attempting to predict crimes with certainty, the platform analyzes historical crime patterns, spatial trends, temporal behaviors, and criminal relationships to recommend proactive patrol deployment, identify emerging hotspots, detect unusual activity, and generate automated intelligence briefings.
 

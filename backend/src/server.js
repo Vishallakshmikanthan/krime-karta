@@ -491,8 +491,27 @@ function networkGraph(data) {
 }
 
 const app = express();
-app.use(helmet());
-app.use(cors({ origin: process.env.CORS_ORIGIN || 'http://localhost:5173', credentials: true }));
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+  crossOriginEmbedderPolicy: false,
+  contentSecurityPolicy: false,
+}));
+// On Catalyst AppSail the proxy already injects Access-Control-Allow-Origin.
+// We must NOT set it ourselves or the browser sees a duplicate and blocks the request.
+// For local development (no Catalyst port env) we add CORS headers manually.
+app.use((req, res, next) => {
+  const isLocalDev = !process.env.X_ZOHO_CATALYST_LISTEN_PORT;
+  if (isLocalDev) {
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  }
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204);
+  }
+  next();
+});
 app.use(express.json({ limit: '1mb' }));
 app.use(morgan('dev'));
 
@@ -1182,8 +1201,8 @@ app.use((err, _req, res, _next) => {
 });
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  app.listen(PORT, () => {
-    console.log(`KrimeKarta backend listening on http://localhost:${PORT}`);
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`KrimeKarta backend listening on http://0.0.0.0:${PORT}`);
   });
 }
 

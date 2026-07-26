@@ -1,5 +1,9 @@
-node_modules
 venv
 .pytest_cache
 *.db
 .git
+data
+server.log
+server.err.log
+server-3002.log
+server-3002.err.log
