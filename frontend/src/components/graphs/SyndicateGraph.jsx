@@ -7,24 +7,24 @@ export default function SyndicateGraph({ graphData }) {
     return <div className="p-4 text-center text-gray-500">Loading Network Graph...</div>;
   }
 
-  // Precomputed node positions for reliable rendering
+  // Precomputed node positions for 8 authentic rowdies/dons
   const positions = [
-    { x: 50, y: 35 },
-    { x: 30, y: 20 },
-    { x: 70, y: 25 },
-    { x: 40, y: 65 },
-    { x: 20, y: 55 },
-    { x: 80, y: 60 },
-    { x: 60, y: 75 },
-    { x: 15, y: 80 }
+    { x: 45, y: 25 }, // CRIM-001: Wilson Garden Naga
+    { x: 25, y: 20 }, // CRIM-002: Cycle Ravi
+    { x: 70, y: 30 }, // CRIM-003: Double Meter Mohan
+    { x: 50, y: 60 }, // CRIM-004: Bomb Naga
+    { x: 18, y: 65 }, // CRIM-005: Kunigal Giri
+    { x: 80, y: 65 }, // CRIM-006: Slum Bharatha
+    { x: 30, y: 75 }, // CRIM-007: Welding Kumar
+    { x: 72, y: 80 }  // CRIM-008: Hebbagodi Satisha
   ];
 
   return (
     <div className="bg-surface-container border border-outline-variant rounded-xl p-6 shadow-sm">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="text-lg font-bold text-on-surface">Criminal Syndicate Network Graph</h3>
-          <p className="text-xs text-on-surface-variant">NetworkX Centrality Analysis & Leadership Bridges</p>
+          <h3 className="text-lg font-bold text-on-surface">Authenticated Karnataka Syndicate Graph</h3>
+          <p className="text-xs text-on-surface-variant">NetworkX Centrality Analysis & Leadership Bridges (SCRB 2026 Database)</p>
         </div>
         <div className="flex gap-2">
           {graphData.top_syndicate_bridges?.map((bridge, idx) => (
@@ -35,7 +35,7 @@ export default function SyndicateGraph({ graphData }) {
         </div>
       </div>
 
-      <div className="relative w-full h-[450px] bg-slate-900 rounded-lg overflow-hidden border border-slate-800 flex items-center justify-center">
+      <div className="relative w-full h-[480px] bg-slate-950 rounded-lg overflow-hidden border border-slate-800 flex items-center justify-center">
         {/* SVG Edges */}
         <svg className="absolute inset-0 w-full h-full pointer-events-none">
           {graphData.edges.map((edge, idx) => {
@@ -57,8 +57,8 @@ export default function SyndicateGraph({ graphData }) {
                   y2={y2}
                   stroke="#ef4444"
                   strokeWidth={edge.weight * 2.5}
-                  strokeDasharray={edge.relationship === 'INFORMANT' ? '4,4' : undefined}
-                  opacity={0.65}
+                  strokeDasharray={edge.relationship === 'FINANCIAL_NEXUS' ? '4,4' : undefined}
+                  opacity={0.75}
                 />
               </g>
             );
@@ -69,7 +69,7 @@ export default function SyndicateGraph({ graphData }) {
         {graphData.nodes.map((node, idx) => {
           const pos = positions[idx % positions.length];
           const isSelected = selectedNode?.id === node.id;
-          const isBoss = node.category.includes('Boss') || node.category.includes('Lead');
+          const isBoss = node.category?.includes('Boss') || node.risk_score > 0.90;
 
           return (
             <div
@@ -77,15 +77,15 @@ export default function SyndicateGraph({ graphData }) {
               onClick={() => setSelectedNode(node)}
               style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
               className={`absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-all duration-200 ${
-                isSelected ? 'scale-125 z-30 ring-4 ring-yellow-400' : 'hover:scale-110 z-20'
+                isSelected ? 'scale-125 z-30 ring-4 ring-amber-400' : 'hover:scale-110 z-20'
               }`}
             >
-              <div className={`flex flex-col items-center justify-center rounded-full text-white font-bold text-xs shadow-lg p-3 border-2 ${
-                isBoss ? 'w-14 h-14 bg-red-700 border-red-400' : 'w-11 h-11 bg-slate-700 border-slate-500'
+              <div className={`flex flex-col items-center justify-center rounded-full text-white font-bold text-xs shadow-lg p-2 border-2 ${
+                isBoss ? 'w-14 h-14 bg-red-700 border-red-400' : 'w-12 h-12 bg-slate-700 border-slate-500'
               }`}>
                 {node.id.substring(5)}
               </div>
-              <div className="mt-1 bg-slate-950/90 text-slate-200 text-[10px] px-2 py-0.5 rounded shadow text-center whitespace-nowrap border border-slate-700">
+              <div className="mt-1 bg-slate-900/95 text-slate-100 text-[10px] px-2 py-0.5 rounded shadow text-center whitespace-nowrap border border-slate-700 font-semibold">
                 {node.label}
               </div>
             </div>
@@ -95,24 +95,30 @@ export default function SyndicateGraph({ graphData }) {
 
       {/* Selected Node Details Drawer */}
       {selectedNode && (
-        <div className="mt-4 p-4 bg-slate-800/80 border border-slate-700 rounded-lg text-slate-200 flex items-center justify-between">
-          <div>
+        <div className="mt-4 p-4 bg-slate-900 border border-slate-800 rounded-lg text-slate-200 space-y-2">
+          <div className="flex items-center justify-between">
             <h4 className="font-bold text-sm text-white flex items-center gap-2">
               👤 {selectedNode.label} ({selectedNode.id})
               <span className="bg-red-900/50 text-red-300 text-xs px-2 py-0.5 rounded border border-red-700">
                 {selectedNode.category}
               </span>
             </h4>
-            <p className="text-xs text-slate-300 mt-1">
-              Betweenness Centrality: <strong className="text-yellow-400">{selectedNode.centrality}</strong> | Risk Score: <strong className="text-red-400">{Math.round(selectedNode.risk_score * 100)}%</strong> | Linked FIR Cases: {selectedNode.cases_linked}
-            </p>
+            <button
+              onClick={() => setSelectedNode(null)}
+              className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1 rounded font-medium"
+            >
+              Close
+            </button>
           </div>
-          <button
-            onClick={() => setSelectedNode(null)}
-            className="text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-1.5 rounded font-medium"
-          >
-            Close Details
-          </button>
+          <p className="text-xs text-slate-300">
+            <strong>Operative Area:</strong> {selectedNode.district} | <strong>Betweenness Centrality:</strong> <span className="text-amber-400 font-mono font-bold">{selectedNode.centrality}</span> | <strong>Risk Rating:</strong> <span className="text-red-400 font-mono font-bold">{Math.round(selectedNode.risk_score * 100)}%</span>
+          </p>
+          <p className="text-xs text-slate-300 bg-slate-950 p-2 rounded border border-slate-800">
+            <strong>Background & Activities:</strong> {selectedNode.background}
+          </p>
+          <p className="text-xs text-amber-300 font-medium">
+            <strong>2026 Police Status:</strong> {selectedNode.status}
+          </p>
         </div>
       )}
     </div>
