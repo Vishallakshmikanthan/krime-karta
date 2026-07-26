@@ -165,13 +165,13 @@ export default function SyndicateGraph({ graphData, district }) {
 
       // Deep obsidian background
       const bgGrad = ctx.createRadialGradient(center.x, center.y, 50, center.x, center.y, width / 1.2);
-      bgGrad.addColorStop(0, '#0d1322');
-      bgGrad.addColorStop(1, '#060911');
+      bgGrad.addColorStop(0, '#fcf9f8');
+      bgGrad.addColorStop(1, '#f6f3f2');
       ctx.fillStyle = bgGrad;
       ctx.fillRect(0, 0, width, height);
 
       // Subtle background constellation radar circles
-      ctx.strokeStyle = '#1e293b';
+      ctx.strokeStyle = '#e5e2e1';
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.arc(center.x, center.y, 140, 0, Math.PI * 2);
@@ -194,17 +194,17 @@ export default function SyndicateGraph({ graphData, district }) {
         ctx.lineTo(n2.x, n2.y);
 
         if (isConnectedToActive) {
-          ctx.strokeStyle = '#38bdf8';
+          ctx.strokeStyle = '#8c1d18';
           ctx.lineWidth = 2.5;
           ctx.globalAlpha = 0.95;
-          ctx.shadowColor = '#06b6d4';
+          ctx.shadowColor = '#8c1d18';
           ctx.shadowBlur = 8;
         } else if (isDimmed) {
-          ctx.strokeStyle = '#334155';
+          ctx.strokeStyle = '#dfbfbb';
           ctx.lineWidth = 0.8;
-          ctx.globalAlpha = 0.15;
+          ctx.globalAlpha = 0.25;
         } else {
-          ctx.strokeStyle = (n1.isDistrictMatch || n2.isDistrictMatch) ? '#ec4899' : '#0284c7';
+          ctx.strokeStyle = (n1.isDistrictMatch || n2.isDistrictMatch) ? '#8c1d18' : '#645e4c';
           ctx.lineWidth = 1.2;
           ctx.globalAlpha = 0.45;
         }
@@ -227,9 +227,9 @@ export default function SyndicateGraph({ graphData, district }) {
         if (n.isDistrictMatch && district !== 'ALL') {
           ctx.beginPath();
           ctx.arc(n.x, n.y, n.radius + 7, 0, Math.PI * 2);
-          ctx.fillStyle = 'rgba(236, 72, 153, 0.2)';
+          ctx.fillStyle = 'rgba(140, 29, 24, 0.1)';
           ctx.fill();
-          ctx.strokeStyle = '#f43f5e';
+          ctx.strokeStyle = '#8c1d18';
           ctx.lineWidth = 1.5;
           ctx.stroke();
         }
@@ -238,7 +238,7 @@ export default function SyndicateGraph({ graphData, district }) {
         if (isSelected || isHovered) {
           ctx.beginPath();
           ctx.arc(n.x, n.y, n.radius + 9, 0, Math.PI * 2);
-          ctx.strokeStyle = '#fbbf24';
+          ctx.strokeStyle = '#e0b14f';
           ctx.lineWidth = 2.5;
           ctx.stroke();
         }
@@ -246,19 +246,20 @@ export default function SyndicateGraph({ graphData, district }) {
         // Glowing Node Body
         ctx.beginPath();
         ctx.arc(n.x, n.y, isSelected || isHovered ? n.radius + 3 : n.radius, 0, Math.PI * 2);
-        ctx.fillStyle = n.color || '#06b6d4';
-        ctx.shadowColor = n.color || '#06b6d4';
+        const nodeColor = n.category === 'Syndicate Boss' ? '#8c1d18' : (n.isDistrictMatch ? '#6b0105' : '#645e4c');
+        ctx.fillStyle = nodeColor;
+        ctx.shadowColor = nodeColor;
         ctx.shadowBlur = isSelected || isHovered ? 16 : 10;
         ctx.fill();
 
-        ctx.strokeStyle = '#f8fafc';
+        ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = 1.2;
         ctx.stroke();
 
         // Node Label Text
         ctx.shadowBlur = 0;
         ctx.font = isSelected || isHovered ? 'bold 11px Inter, sans-serif' : '10px Inter, sans-serif';
-        ctx.fillStyle = isSelected || isHovered ? '#fbbf24' : (n.isDistrictMatch ? '#ffffff' : '#cbd5e1');
+        ctx.fillStyle = isSelected || isHovered ? '#8c1d18' : (n.isDistrictMatch ? '#1b1b1c' : '#58413e');
         ctx.fillText(n.alias || n.label, n.x + n.radius + 5, n.y + 3);
 
         ctx.restore();
@@ -312,25 +313,25 @@ export default function SyndicateGraph({ graphData, district }) {
   }, [graphData]);
 
   return (
-    <div className="bg-slate-950 border border-slate-800 rounded-xl p-5 shadow-2xl space-y-4 text-slate-100 select-none">
+    <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 shadow-lg space-y-4 text-on-surface select-none">
       {/* Header Bar */}
-      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 border-b border-outline-variant pb-4">
         <div>
-          <h3 className="text-xl font-bold text-white flex items-center gap-2 font-mono">
+          <h3 className="text-xl font-bold text-on-surface flex items-center gap-2 font-mono">
             🕸️ Karnataka 50-Rowdy Underworld Constellation Graph
           </h3>
-          <p className="text-xs text-slate-400 mt-1">
-            Displaying <strong className="text-pink-400 font-bold">{graphData?.total_nodes || 50} Interconnected Rowdies & Dons</strong> • <strong className="text-cyan-400 font-bold">{graphData?.total_edges || 110} Factional & Financial Links</strong>
+          <p className="text-xs text-on-surface-variant mt-1">
+            Displaying <strong className="text-primary-container font-bold">{graphData?.total_nodes || 50} Interconnected Rowdies & Dons</strong> • <strong className="text-secondary font-bold">{graphData?.total_edges || 110} Factional & Financial Links</strong>
           </p>
         </div>
 
         {/* Controls */}
         <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-1 bg-slate-900 border border-slate-800 p-1 rounded-lg">
+          <div className="flex items-center gap-1 bg-surface-container-low border border-outline-variant p-1 rounded-lg">
             <button
               onClick={() => setViewMode('SPOTLIGHT')}
               className={`px-3 py-1 text-xs font-bold rounded-md transition-colors ${
-                viewMode === 'SPOTLIGHT' ? 'bg-pink-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'
+                viewMode === 'SPOTLIGHT' ? 'bg-primary-container text-on-primary shadow' : 'text-on-surface-variant hover:text-on-surface'
               }`}
             >
               👑 Spotlight District ({districtMatchesCount})
@@ -338,7 +339,7 @@ export default function SyndicateGraph({ graphData, district }) {
             <button
               onClick={() => setViewMode('FILTER')}
               className={`px-3 py-1 text-xs font-bold rounded-md transition-colors ${
-                viewMode === 'FILTER' ? 'bg-cyan-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'
+                viewMode === 'FILTER' ? 'bg-secondary text-on-secondary shadow' : 'text-on-surface-variant hover:text-on-surface'
               }`}
             >
               🔍 Filter Subgraph
@@ -351,14 +352,14 @@ export default function SyndicateGraph({ graphData, district }) {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search Rowdy / Alias..."
-              className="bg-slate-900 border border-slate-800 rounded-lg pl-3 pr-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-500 w-48"
+              className="bg-surface-container-low border border-outline-variant rounded-lg pl-3 pr-3 py-1.5 text-xs text-on-surface placeholder-on-surface-variant focus:outline-none focus:border-primary-container w-48"
             />
           </div>
         </div>
       </div>
 
       {/* Main Canvas Graph */}
-      <div className="relative w-full h-[620px] bg-slate-950 rounded-xl overflow-hidden border border-slate-800 shadow-inner">
+      <div className="relative w-full h-[620px] bg-surface rounded-xl overflow-hidden border border-outline-variant shadow-inner">
         <canvas
           ref={canvasRef}
           width={1000}
@@ -370,22 +371,22 @@ export default function SyndicateGraph({ graphData, district }) {
         />
 
         {/* Legend Overlay */}
-        <div className="absolute top-4 left-4 bg-slate-900/90 backdrop-blur-md p-3 rounded-lg border border-slate-800 text-[11px] space-y-1.5 text-slate-300">
-          <div className="font-bold text-white text-xs mb-1">Graph Legend</div>
+        <div className="absolute top-4 left-4 bg-surface-container-lowest/90 backdrop-blur-md p-3 rounded-lg border border-outline-variant text-[11px] space-y-1.5 text-on-surface-variant shadow-sm">
+          <div className="font-bold text-on-surface text-xs mb-1">Graph Legend</div>
           <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-pink-500 shadow-sm shadow-pink-500"></span>
+            <span className="w-3 h-3 rounded-full bg-[#8c1d18] shadow-sm shadow-[#8c1d18]"></span>
             <span>Target District Rowdy ({district})</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-cyan-400 shadow-sm shadow-cyan-400"></span>
+            <span className="w-3 h-3 rounded-full bg-[#6b0105] shadow-sm shadow-[#6b0105]"></span>
             <span>Syndicate Boss / Kingpin</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-emerald-400"></span>
+            <span className="w-3 h-3 rounded-full bg-[#645e4c]"></span>
             <span>Interstate Operative</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-3.5 h-0.5 bg-sky-400"></span>
+            <span className="w-3.5 h-0.5 bg-[#dfbfbb]"></span>
             <span>Connected Gang Nexus</span>
           </div>
         </div>
@@ -393,49 +394,49 @@ export default function SyndicateGraph({ graphData, district }) {
 
       {/* Selected Node Dossier Drawer */}
       {selectedNode && (
-        <div className="p-4 bg-slate-900 border border-slate-800 rounded-xl text-slate-200 space-y-3 shadow-2xl">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+        <div className="p-4 bg-surface-container-lowest border border-outline-variant rounded-xl text-on-surface space-y-3 shadow-xl">
+          <div className="flex items-center justify-between border-b border-outline-variant pb-2">
             <div>
-              <h4 className="font-bold text-base text-white flex items-center gap-2 font-mono">
-                👤 {selectedNode.label} {selectedNode.alias && <span className="text-amber-400 text-sm font-normal">("{selectedNode.alias}")</span>}
-                <span className="bg-pink-950 text-pink-300 text-[10px] font-bold px-2 py-0.5 rounded border border-pink-700 uppercase">
+              <h4 className="font-bold text-base text-on-surface flex items-center gap-2 font-mono">
+                👤 {selectedNode.label} {selectedNode.alias && <span className="text-tertiary text-sm font-normal">("{selectedNode.alias}")</span>}
+                <span className="bg-primary-container text-on-primary text-[10px] font-bold px-2 py-0.5 rounded border border-primary uppercase">
                   {selectedNode.category}
                 </span>
               </h4>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Era: <strong className="text-slate-200">{selectedNode.era}</strong> | Operative Territory: <strong className="text-slate-200">{selectedNode.district}</strong>
+              <p className="text-xs text-on-surface-variant mt-0.5">
+                Era: <strong className="text-on-surface">{selectedNode.era}</strong> | Operative Territory: <strong className="text-on-surface">{selectedNode.district}</strong>
               </p>
             </div>
             <button
               onClick={() => setSelectedNode(null)}
-              className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1 rounded font-bold transition-colors"
+              className="text-xs bg-surface-container-high hover:bg-surface-container-highest text-on-surface px-3 py-1 rounded font-bold transition-colors"
             >
               ✕ Close Dossier
             </button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
-            <div className="bg-slate-950 p-2.5 rounded border border-slate-800">
-              <span className="text-slate-400 block text-[10px] font-bold uppercase">NetworkX Centrality Score</span>
-              <span className="text-amber-400 font-mono text-base font-bold">{selectedNode.centrality}</span>
+            <div className="bg-surface-container-low p-2.5 rounded border border-outline-variant">
+              <span className="text-on-surface-variant block text-[10px] font-bold uppercase">NetworkX Centrality Score</span>
+              <span className="text-tertiary font-mono text-base font-bold">{selectedNode.centrality}</span>
             </div>
 
-            <div className="bg-slate-950 p-2.5 rounded border border-slate-800">
-              <span className="text-slate-400 block text-[10px] font-bold uppercase">State Crime Risk Rating</span>
-              <span className="text-pink-400 font-mono text-base font-bold">{Math.round(selectedNode.risk_score * 100)}% Risk Index</span>
+            <div className="bg-surface-container-low p-2.5 rounded border border-outline-variant">
+              <span className="text-on-surface-variant block text-[10px] font-bold uppercase">State Crime Risk Rating</span>
+              <span className="text-primary-container font-mono text-base font-bold">{Math.round(selectedNode.risk_score * 100)}% Risk Index</span>
             </div>
 
-            <div className="bg-slate-950 p-2.5 rounded border border-slate-800">
-              <span className="text-slate-400 block text-[10px] font-bold uppercase">2026 Legal & Surveillance Status</span>
-              <span className="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded border bg-red-950/80 text-red-300 border-red-700">
+            <div className="bg-surface-container-low p-2.5 rounded border border-outline-variant">
+              <span className="text-on-surface-variant block text-[10px] font-bold uppercase">2026 Legal & Surveillance Status</span>
+              <span className="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded border bg-error text-on-error border-error">
                 {selectedNode.status}
               </span>
             </div>
           </div>
 
-          <div className="bg-slate-950 p-3 rounded border border-slate-800">
-            <h5 className="text-xs font-bold text-slate-300 mb-1 uppercase tracking-wider">Primary Criminal Background & Gang Network History</h5>
-            <p className="text-xs text-slate-300 leading-relaxed">
+          <div className="bg-surface-container-low p-3 rounded border border-outline-variant">
+            <h5 className="text-xs font-bold text-on-surface mb-1 uppercase tracking-wider">Primary Criminal Background & Gang Network History</h5>
+            <p className="text-xs text-on-surface leading-relaxed">
               {selectedNode.background}
             </p>
           </div>

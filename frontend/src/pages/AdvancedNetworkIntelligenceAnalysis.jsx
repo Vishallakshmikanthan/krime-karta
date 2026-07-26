@@ -61,7 +61,7 @@ export default function AdvancedNetworkIntelligenceAnalysis() {
           
           <div className="flex-1 min-h-[550px]">
             {loading ? (
-              <div className="flex items-center justify-center h-96 bg-slate-950 rounded-xl border border-slate-800 text-slate-400 font-bold animate-pulse">
+              <div className="flex items-center justify-center h-96 bg-surface rounded-xl border border-outline-variant text-on-surface-variant font-bold animate-pulse">
                 Computing NetworkX Centrality Matrix for {selectedDistrict}...
               </div>
             ) : (
