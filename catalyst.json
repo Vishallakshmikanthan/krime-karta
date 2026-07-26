@@ -1,12 +1,11 @@
 {
   "client": {
-    "source": "krime-karta",
-    "plugin": "zcatalyst-cli-plugin-react"
+    "source": "frontend/dist"
   },
   "appsail": [
     {
-      "source": "appsail-nodejs",
-      "name": "krime-karta-api"
+      "source": "backend",
+      "name": "krimekarta-backend"
     }
   ]
 }
