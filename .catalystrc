@@ -1,0 +1,30 @@
+{
+  "defaults": {
+    "project": 1,
+    "env": 1
+  },
+  "actives": {
+    "project": 1,
+    "env": 1
+  },
+  "projects": [
+    {
+      "idx": 1,
+      "id": "43354000000013048",
+      "name": "krime-karta",
+      "domain": {
+        "id": "50044361476",
+        "name": "krime-karta-60080181311.development"
+      },
+      "timezone": "Asia/Kolkata",
+      "env": [
+        {
+          "idx": 1,
+          "id": "60080181311",
+          "name": "Development",
+          "type": 3
+        }
+      ]
+    }
+  ]
+}

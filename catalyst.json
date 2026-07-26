@@ -1,0 +1,12 @@
+{
+  "client": {
+    "source": "krime-karta",
+    "plugin": "zcatalyst-cli-plugin-react"
+  },
+  "appsail": [
+    {
+      "source": "appsail-nodejs",
+      "name": "krime-karta-api"
+    }
+  ]
+}

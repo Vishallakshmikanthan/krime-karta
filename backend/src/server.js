@@ -11,7 +11,7 @@ import morgan from 'morgan';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const dataDir = path.resolve(__dirname, '..', 'data');
 const dataFile = path.join(dataDir, 'store.json');
-const PORT = Number(process.env.PORT || 3001);
+const PORT = Number(process.env.X_ZOHO_CATALYST_LISTEN_PORT || process.env.PORT || 3001);
 const JWT_SECRET = process.env.JWT_SECRET || 'krimekarta-local-dev-secret';
 const TOKEN_TTL = '8h';
 const DEV_OTP = process.env.DEV_OTP || '123456';
