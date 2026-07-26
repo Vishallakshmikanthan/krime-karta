@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.api.v1.router import api_router
+from app.db.session import init_db
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -21,6 +22,10 @@ app.add_middleware(
 )
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
+
+@app.on_event("startup")
+def on_startup():
+    init_db()
 
 @app.get("/")
 def root():

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Sidebar from '../components/layout/Sidebar';
 import Header from '../components/layout/Header';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, ScatterChart, Scatter, ZAxis } from 'recharts';
 
 export default function StrategicAnalytics() {
   const [timeRange, setTimeRange] = useState('H1-2026');
@@ -72,6 +72,18 @@ export default function StrategicAnalytics() {
     { year: '2024', total: 235653, label: 'Historical Peak (Cyber & Accidents)' },
     { year: '2025', total: 202533, label: '138.6K IPC + 63.8K SLL' },
     { year: '2026 (H1)', total: 106417, label: '71.1K IPC + 35.3K SLL (Jan-Jun)' }
+  ];
+
+  // Socio-Economic Correlation Data (Mocked for analysis)
+  const socioEconomicData = [
+    { district: 'Bengaluru City', crimeRate: 275, unemployment: 5.2, literacy: 88, poverty: 8 },
+    { district: 'Belagavi', crimeRate: 150, unemployment: 7.1, literacy: 73, poverty: 15 },
+    { district: 'Tumakuru', crimeRate: 120, unemployment: 6.8, literacy: 75, poverty: 14 },
+    { district: 'Mandya', crimeRate: 115, unemployment: 8.5, literacy: 70, poverty: 18 },
+    { district: 'Mysuru', crimeRate: 135, unemployment: 6.0, literacy: 72, poverty: 12 },
+    { district: 'Hassan', crimeRate: 125, unemployment: 6.5, literacy: 74, poverty: 13 },
+    { district: 'Shivamogga', crimeRate: 140, unemployment: 7.5, literacy: 80, poverty: 11 },
+    { district: 'Kalaburagi', crimeRate: 180, unemployment: 9.2, literacy: 65, poverty: 22 },
   ];
 
   return (
@@ -167,6 +179,41 @@ export default function StrategicAnalytics() {
               </div>
             </div>
           </div>
+          
+          {/* Socio-Economic Correlation Section */}
+          <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 shadow-sm">
+            <h3 className="text-base font-bold text-on-surface mb-1">Socio-Economic Crime Correlation (Risk Analysis)</h3>
+            <p className="text-xs text-on-surface-variant mb-6">Scatter plot correlating District Unemployment Rate (%) against Crime Volume (per 100k population). Node size represents relative Poverty Index.</p>
+            <div className="h-[350px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <ScatterChart margin={{ top: 10, right: 30, left: 10, bottom: 20 }}>
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                  <XAxis 
+                    type="number" 
+                    dataKey="unemployment" 
+                    name="Unemployment (%)" 
+                    tick={{ fontSize: 10, fill: 'var(--color-on-surface)' }} 
+                    label={{ value: 'Unemployment Rate (%)', position: 'bottom', offset: 0, fontSize: 12, fill: 'var(--color-on-surface)' }} 
+                  />
+                  <YAxis 
+                    type="number" 
+                    dataKey="crimeRate" 
+                    name="Crime Rate" 
+                    tick={{ fontSize: 10, fill: 'var(--color-on-surface)' }} 
+                    label={{ value: 'Crime Rate (per 100k)', angle: -90, position: 'insideLeft', offset: -5, fontSize: 12, fill: 'var(--color-on-surface)' }} 
+                  />
+                  <ZAxis type="number" dataKey="poverty" range={[50, 400]} name="Poverty Index" />
+                  <Tooltip 
+                    cursor={{ strokeDasharray: '3 3' }} 
+                    contentStyle={{ backgroundColor: 'var(--color-surface)', color: 'var(--color-on-surface)', border: '1px solid var(--color-outline)', borderRadius: '8px' }} 
+                  />
+                  <Legend verticalAlign="top" height={36}/>
+                  <Scatter name="District Socio-Economic Crime Correlation" data={socioEconomicData} fill="#8c1d18" />
+                </ScatterChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+          
         </main>
       </div>
     </div>

@@ -1,6 +1,6 @@
 from typing import List, Optional, Any
 from datetime import datetime
-from pydantic import BaseModel, EmailStr, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict
 
 class Token(BaseModel):
     access_token: str
@@ -19,7 +19,7 @@ class UserLogin(BaseModel):
 
 class UserCreate(BaseModel):
     username: str
-    email: EmailStr
+    email: str
     password: str
     role: str = "ANALYST"
     district: str = "Bengaluru Central"
@@ -35,19 +35,47 @@ class UserResponse(BaseModel):
 
 class CrimeRecordSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-    id: Optional[int] = None
     fir_number: str
     title: str
-    category: str
-    severity: str = "HIGH"
+    crime_type: str
+    crime_category: Optional[str] = None
+    priority: str = "MEDIUM"
     status: str = "UNDER_INVESTIGATION"
     latitude: float
     longitude: float
     location_name: str
     district: str
     station_name: str
-    occured_at: Optional[datetime] = None
+    fir_date: Optional[datetime] = None
     description: Optional[str] = None
+    suspects: int = 0
+    arrests: int = 0
+    documents: int = 0
+    risk_score: Optional[float] = None
+
+class CrimeRecordCreate(BaseModel):
+    fir_number: Optional[str] = None
+    title: str
+    crime_type: str
+    crime_category: Optional[str] = None
+    priority: str = "MEDIUM"
+    status: str = "UNDER_REVIEW"
+    latitude: float
+    longitude: float
+    location_name: str
+    district: str = "Bengaluru Central"
+    station_name: str = "Unassigned Station"
+    fir_date: Optional[datetime] = None
+    description: Optional[str] = None
+    suspects: int = 0
+    arrests: int = 0
+    documents: int = 0
+
+class PaginatedCrimeRecords(BaseModel):
+    items: List[CrimeRecordSchema]
+    total: int
+    page: int
+    limit: int
 
 class GeoJSONFeature(BaseModel):
     type: str = "Feature"

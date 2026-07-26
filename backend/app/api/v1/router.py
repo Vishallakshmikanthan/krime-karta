@@ -3,11 +3,17 @@ from typing import List, Dict, Any
 from datetime import datetime
 import hashlib
 import jwt
+import uuid
+from sqlalchemy.orm import Session
+from sqlalchemy import or_, desc
 
 from app.config import settings
+from app.db.session import get_db
+from app.models.domain_models import CrimeRecord, User
 from app.schemas.pydantic_schemas import (
     UserLogin, Token, UserResponse, HotspotPredictRequest, HotspotPredictResponse,
-    NetworkGraphResponse, BriefingRequest, ExecutiveBriefingResponse, GeoJSONCollection, GeoJSONFeature
+    NetworkGraphResponse, BriefingRequest, ExecutiveBriefingResponse, GeoJSONCollection, GeoJSONFeature,
+    CrimeRecordCreate, CrimeRecordSchema, PaginatedCrimeRecords
 )
 from app.services.ml_hotspot import hotspot_engine
 from app.services.ml_shap import shap_service
@@ -22,28 +28,6 @@ def hash_password(password: str) -> str:
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return hash_password(plain_password) == hashed_password
 
-# Mock in-memory database
-MOCK_USERS = {
-    "admin": {
-        "id": 1,
-        "username": "admin",
-        "email": "admin@krimekarta.gov.in",
-        "hashed_password": hash_password("admin123"),
-        "role": "SUPER_ADMIN",
-        "district": "Bengaluru Central",
-        "is_active": True
-    },
-    "officer": {
-        "id": 2,
-        "username": "officer",
-        "email": "officer@krimekarta.gov.in",
-        "hashed_password": hash_password("officer123"),
-        "role": "FIELD_OFFICER",
-        "district": "Bengaluru Central",
-        "is_active": True
-    }
-}
-
 @api_router.get("/health")
 def health_check():
     return {
@@ -54,17 +38,17 @@ def health_check():
     }
 
 @api_router.post("/auth/login", response_model=Token)
-def login(user_in: UserLogin):
-    user = MOCK_USERS.get(user_in.username)
-    if not user or not verify_password(user_in.password, user["hashed_password"]):
+def login(user_in: UserLogin, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.username == user_in.username).first()
+    if not user or not verify_password(user_in.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password"
         )
     
     payload = {
-        "sub": user["username"],
-        "role": user["role"],
+        "sub": user.username,
+        "role": user.role,
         "exp": datetime.utcnow().timestamp() + (settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60)
     }
     token = jwt.encode(payload, settings.JWT_SECRET, algorithm=settings.ALGORITHM)
@@ -72,9 +56,9 @@ def login(user_in: UserLogin):
     return Token(
         access_token=token,
         token_type="bearer",
-        user_id=user["id"],
-        role=user["role"],
-        username=user["username"]
+        user_id=user.id,
+        role=user.role,
+        username=user.username
     )
 
 @api_router.post("/ml/predict-hotspots", response_model=HotspotPredictResponse)
@@ -106,52 +90,147 @@ def get_network_graph(district: str = "Bengaluru Central"):
 def get_executive_briefing(req: BriefingRequest):
     return gemini_service.generate_district_briefing(district=req.district, period=req.period)
 
+def serialize_crime(record: CrimeRecord) -> dict:
+    return {
+        "fir_number": record.fir_number,
+        "title": record.title,
+        "crime_type": record.crime_type,
+        "crime_category": record.crime_category,
+        "priority": record.priority,
+        "status": record.status,
+        "latitude": record.latitude,
+        "longitude": record.longitude,
+        "location_name": record.location_name,
+        "district": record.district,
+        "station_name": record.station_name,
+        "fir_date": record.fir_date,
+        "description": record.description,
+        "suspects": record.suspects,
+        "arrests": record.arrests,
+        "documents": record.documents,
+        "risk_score": float(record.risk_score) if record.risk_score is not None else None,
+    }
+
+def query_crime_records(
+    db: Session,
+    search: str | None = None,
+    district: str | None = None,
+    category: str | None = None,
+    status_filter: str | None = None,
+):
+    query = db.query(CrimeRecord)
+    if search:
+        pattern = f"%{search}%"
+        query = query.filter(or_(
+            CrimeRecord.fir_number.ilike(pattern),
+            CrimeRecord.title.ilike(pattern),
+            CrimeRecord.crime_type.ilike(pattern),
+            CrimeRecord.station_name.ilike(pattern),
+        ))
+    if district:
+        query = query.filter(CrimeRecord.district == district)
+    if category and category != "All Categories":
+        query = query.filter(CrimeRecord.crime_category == category)
+    if status_filter:
+        query = query.filter(CrimeRecord.status == status_filter)
+    return query.order_by(desc(CrimeRecord.fir_date))
+
 @api_router.get("/crimes/geojson", response_model=GeoJSONCollection)
-def get_crimes_geojson(district: str = "Bengaluru Central"):
-    sample_crimes = [
-        {"fir": "FIR-2026-00101", "title": "Night Commercial Burglary", "cat": "Robbery", "lat": 12.9716, "lng": 77.5946, "sev": "CRITICAL"},
-        {"fir": "FIR-2026-00102", "title": "Armed Assault Near Metro", "cat": "Assault", "lat": 12.9750, "lng": 77.5990, "sev": "HIGH"},
-        {"fir": "FIR-2026-00103", "title": "Chain Snatching Incident", "cat": "Theft", "lat": 12.9680, "lng": 77.5890, "sev": "MEDIUM"},
-        {"fir": "FIR-2026-00104", "title": "Financial Fraud & Mule Hub", "cat": "Cybercrime", "lat": 12.9800, "lng": 77.6050, "sev": "HIGH"}
-    ]
-    
+def get_crimes_geojson(district: str = "Bengaluru Central", db: Session = Depends(get_db)):
+    crimes = query_crime_records(db, district=district).limit(500).all()
     features = []
-    for c in sample_crimes:
+    for c in crimes:
         features.append(GeoJSONFeature(
-            geometry={"type": "Point", "coordinates": [c["lng"], c["lat"]]},
-            properties={"fir_number": c["fir"], "title": c["title"], "category": c["cat"], "severity": c["sev"]}
+            geometry={"type": "Point", "coordinates": [c.longitude, c.latitude]},
+            properties={
+                "fir_number": c.fir_number,
+                "title": c.title,
+                "category": c.crime_category or c.crime_type,
+                "severity": c.priority,
+                "status": c.status,
+                "district": c.district,
+                "station_name": c.station_name,
+            }
         ))
         
     return GeoJSONCollection(features=features)
 
-MOCK_CRIME_RECORDS = [
-    {
-      "id": "FIR-2026-00101",
-      "title": "Central Bengaluru Supari & Extortion Ring",
-      "date": "2026-06-12",
-      "status": "ACTIVE_INVESTIGATION",
-      "category": "Murder & Extortion (Sec 103 BNS)",
-      "district": "Bengaluru City (Central)",
-      "primarySuspect": "Wilson Garden Naga",
-      "assignedTo": "CCB Anti-Rowdy Squad"
-    },
-    {
-      "id": "FIR-2026-00102",
-      "title": "Western Subdivision Armed Land Settlement",
-      "date": "2026-05-28",
-      "status": "ACTIVE_INVESTIGATION",
-      "category": "Armed Extortion & Arms Act",
-      "district": "West Bengaluru",
-      "primarySuspect": "Cycle Ravi",
-      "assignedTo": "Insp. Gowda (CCB)"
+@api_router.get("/crime-records", response_model=PaginatedCrimeRecords)
+def get_crime_records(
+    page: int = 1,
+    limit: int = 25,
+    search: str | None = None,
+    district: str | None = None,
+    category: str | None = None,
+    status: str | None = None,
+    db: Session = Depends(get_db),
+):
+    page = max(page, 1)
+    limit = min(max(limit, 1), 100)
+    query = query_crime_records(db, search=search, district=district, category=category, status_filter=status)
+    total = query.count()
+    records = query.offset((page - 1) * limit).limit(limit).all()
+    return {
+        "items": [serialize_crime(record) for record in records],
+        "total": total,
+        "page": page,
+        "limit": limit,
     }
-]
 
-@api_router.get("/crime-records")
-def get_crime_records():
-    return MOCK_CRIME_RECORDS
+@api_router.get("/crimes", response_model=PaginatedCrimeRecords)
+def get_crimes_alias(
+    page: int = 1,
+    limit: int = 25,
+    search: str | None = None,
+    district: str | None = None,
+    category: str | None = None,
+    status: str | None = None,
+    db: Session = Depends(get_db),
+):
+    return get_crime_records(page, limit, search, district, category, status, db)
 
-@api_router.post("/crime-records")
-def create_crime_record(record: dict):
-    MOCK_CRIME_RECORDS.append(record)
-    return {"message": "Record created successfully", "record": record}
+@api_router.get("/crime-records/{fir_number}", response_model=CrimeRecordSchema)
+def get_crime_record(fir_number: str, db: Session = Depends(get_db)):
+    record = db.query(CrimeRecord).filter(CrimeRecord.fir_number == fir_number).first()
+    if not record:
+        raise HTTPException(status_code=404, detail="Crime record not found")
+    return serialize_crime(record)
+
+@api_router.post("/crime-records", response_model=CrimeRecordSchema, status_code=status.HTTP_201_CREATED)
+def create_crime_record(record_in: CrimeRecordCreate, db: Session = Depends(get_db)):
+    fir_number = record_in.fir_number or f"FIR-2026-{uuid.uuid4().hex[:8].upper()}"
+    existing = db.query(CrimeRecord).filter(CrimeRecord.fir_number == fir_number).first()
+    if existing:
+        raise HTTPException(status_code=409, detail="FIR number already exists")
+
+    record = CrimeRecord(
+        fir_number=fir_number,
+        fir_date=record_in.fir_date or datetime.utcnow(),
+        title=record_in.title,
+        crime_type=record_in.crime_type,
+        crime_category=record_in.crime_category or record_in.crime_type,
+        priority=record_in.priority,
+        status=record_in.status,
+        district=record_in.district,
+        station_name=record_in.station_name,
+        ps_code=record_in.station_name.upper().replace(" ", "-"),
+        latitude=record_in.latitude,
+        longitude=record_in.longitude,
+        location_name=record_in.location_name,
+        address=record_in.location_name,
+        description=record_in.description,
+        suspects=record_in.suspects,
+        arrests=record_in.arrests,
+        documents=record_in.documents,
+        accused_count=record_in.suspects,
+        risk_score=88 if record_in.priority.upper() == "HIGH" else 55,
+        risk_factors=["manual-entry", "officer-submitted"],
+    )
+    db.add(record)
+    db.commit()
+    db.refresh(record)
+    return serialize_crime(record)
+
+@api_router.post("/crimes", response_model=CrimeRecordSchema, status_code=status.HTTP_201_CREATED)
+def create_crime_alias(record_in: CrimeRecordCreate, db: Session = Depends(get_db)):
+    return create_crime_record(record_in, db)

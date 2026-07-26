@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapContainer, TileLayer, Marker, Popup, CircleMarker, Polyline } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, CircleMarker, Polyline, Circle } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css'; // Explicitly importing CSS to prevent white screen
 
@@ -12,8 +12,92 @@ const stationIcon = new L.Icon({
   shadowSize: [41, 41]
 });
 
+const regionalHotspotsData = [
+  {
+    name: "Bengaluru Division",
+    center: [12.9716, 77.5946],
+    radius: 12000,
+    color: '#ba1a1a', // Red
+    type: "Organized Syndicate Hub",
+    neighborhoods: "Sriramapura, Shivajinagar, Wilson Garden, Cottonpet, Kalasipalyam, Kamakshipalya, KG Halli",
+    characteristics: "High incidence of extortion, real estate land grabbing, cyber fraud, and corporate-muscle syndicates.",
+    surveillance: "6,210 active rowdies"
+  },
+  {
+    name: "Mangaluru",
+    center: [12.8654, 74.8426],
+    radius: 9000,
+    color: '#ba1a1a', // Red
+    type: "Organized Syndicate Hub",
+    neighborhoods: "Coastal transit routes",
+    characteristics: "Historical entry point for underworld operations, highly organized communal gang structures.",
+    surveillance: "Active Surveillance Pool Maintained"
+  },
+  {
+    name: "Kalaburagi Division",
+    center: [17.3297, 76.8343],
+    radius: 10000,
+    color: '#f97316', // Orange
+    type: "Violent Crime & Factions",
+    neighborhoods: "Station Bazar, Chowk, Raghavendra Nagar",
+    characteristics: "Factional violence, arms possession, property theft, evening chain-snatching.",
+    surveillance: "1,475 active rowdies"
+  },
+  {
+    name: "Belagavi",
+    center: [15.8497, 74.4977],
+    radius: 8000,
+    color: '#f97316', // Orange
+    type: "Violent Crime & Factions",
+    neighborhoods: "Belagavi City & Suburbs",
+    characteristics: "Retaliatory murders and property disputes. High rate of externment orders.",
+    surveillance: "Active Surveillance Pool Maintained"
+  },
+  {
+    name: "Hubballi-Dharwad",
+    center: [15.3647, 75.1240],
+    radius: 8000,
+    color: '#f97316', // Orange
+    type: "Violent Crime & Factions",
+    neighborhoods: "Hubballi-Dharwad twin cities",
+    characteristics: "Retaliatory factional violence and organized bodily offenses.",
+    surveillance: "Active Surveillance Pool Maintained"
+  },
+  {
+    name: "Bengaluru South / Ramanagara",
+    center: [12.7150, 77.2812],
+    radius: 11000,
+    color: '#6b7280', // Gray
+    type: "Resource & Highway Crime",
+    neighborhoods: "Bidadi, Channapatna, Magadi borders",
+    characteristics: "Illegal stone-quarrying mafias, violent highway robberies, rural land-dispute enforcement.",
+    surveillance: "952 active rowdies"
+  },
+  {
+    name: "Hassan",
+    center: [13.0033, 76.1004],
+    radius: 9000,
+    color: '#6b7280', // Gray
+    type: "Resource & Highway Crime",
+    neighborhoods: "Hassan City limits",
+    characteristics: "Inter-district dacoity, sand-mining smuggling, highway cargo thefts.",
+    surveillance: "883 active rowdies"
+  },
+  {
+    name: "Tumakuru",
+    center: [13.3409, 77.1005],
+    radius: 9000,
+    color: '#6b7280', // Gray
+    type: "Resource & Highway Crime",
+    neighborhoods: "Kunigal, Tumakuru highways",
+    characteristics: "Strategic transit corridors for smuggling and highway robbery/dacoity.",
+    surveillance: "856 active rowdies"
+  }
+];
+
 export default function GeospatialMap({ hotspots = [], _district = 'Bengaluru Central', onSelectCell }) {
-  const center = [12.9716, 77.5946];
+  // Center map on Karnataka to show all divisions
+  const center = [15.3173, 75.7139]; 
 
   const patrolRoute = [
     [12.9716, 77.5946],
@@ -23,11 +107,20 @@ export default function GeospatialMap({ hotspots = [], _district = 'Bengaluru Ce
     [12.9716, 77.5946]
   ];
 
+  // Restrict map to Karnataka bounds
+  const karnatakaBounds = [
+    [11.5, 74.0], // South-West coordinates
+    [18.5, 78.5]  // North-East coordinates
+  ];
+
   return (
     <div className="absolute inset-0 w-full h-full z-0">
       <MapContainer
         center={center}
-        zoom={13}
+        zoom={7}
+        minZoom={6}
+        maxBounds={karnatakaBounds}
+        maxBoundsViscosity={1.0}
         scrollWheelZoom={true}
         style={{ width: '100%', height: '100%', zIndex: 0 }}
       >
@@ -35,6 +128,40 @@ export default function GeospatialMap({ hotspots = [], _district = 'Bengaluru Ce
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>'
           url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
         />
+
+        {/* Render State-Wide Geofencing Zones */}
+        {regionalHotspotsData.map((zone, idx) => (
+          <Circle
+            key={`zone-${idx}`}
+            center={zone.center}
+            radius={zone.radius}
+            pathOptions={{
+              color: zone.color,
+              fillColor: zone.color,
+              fillOpacity: 0.2,
+              weight: 2,
+              dashArray: '5, 5'
+            }}
+          >
+            <Popup>
+              <div className="p-2 min-w-[220px] text-on-surface">
+                <div className="flex items-center gap-2 mb-2 border-b border-outline-variant pb-2">
+                  <span className="material-symbols-outlined text-[20px]" style={{ color: zone.color }}>gpp_bad</span>
+                  <span className="font-bold text-sm uppercase tracking-wider">{zone.name}</span>
+                </div>
+                <div className="space-y-2 text-xs">
+                  <p><span className="font-bold text-on-surface-variant">Zone Type:</span> <span style={{ color: zone.color }} className="font-bold">{zone.type}</span></p>
+                  <p><span className="font-bold text-on-surface-variant">Hotspots:</span> {zone.neighborhoods}</p>
+                  <p><span className="font-bold text-on-surface-variant">Modus Operandi:</span> {zone.characteristics}</p>
+                  <div className="mt-2 pt-2 border-t border-outline-variant font-bold text-error flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[14px]">warning</span>
+                    Surveillance: {zone.surveillance}
+                  </div>
+                </div>
+              </div>
+            </Popup>
+          </Circle>
+        ))}
 
         {hotspots.map((point) => {
           const color = point.risk_level === 'CRITICAL' ? '#ba1a1a' :
@@ -99,3 +226,4 @@ export default function GeospatialMap({ hotspots = [], _district = 'Bengaluru Ce
     </div>
   );
 }
+
